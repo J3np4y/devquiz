@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import {
+  SHORT_CHALLENGE,
   answer,
   bank,
   finishChallenge,
@@ -104,8 +105,8 @@ test.describe('Teclado', () => {
     await expect(page.getByRole('button', { name: 'Empezar reto a medida' })).toBeFocused();
     await page.keyboard.press('Enter');
 
-    for (let position = 1; position <= 3; position++) {
-      await expect(page.getByText(`Pregunta ${position} de 3`)).toBeVisible();
+    for (let position = 1; position <= 7; position++) {
+      await expect(page.getByText(`Pregunta ${position} de 7`)).toBeVisible();
       await expect(page.getByRole('heading', { level: 1 })).toBeFocused();
 
       const key = String((await optionIndex(page, position !== 2)) + 1);
@@ -116,7 +117,7 @@ test.describe('Teclado', () => {
       await page.keyboard.press('Enter');
     }
 
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Has acertado 2 de 3');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Has acertado 6 de 7');
     await expect(page.getByRole('heading', { level: 1 })).toBeFocused();
   });
 
@@ -149,7 +150,7 @@ test.describe('Teclado', () => {
     await page.goto('./');
     await startFiltered(page, 'sql', 'avanzado');
     await page.keyboard.press('Enter');
-    await expect(page.getByText('Pregunta 1 de 3')).toBeVisible();
+    await expect(page.getByText('Pregunta 1 de 7')).toBeVisible();
     await expect(page.locator('.feedback')).toHaveCount(0);
   });
 
@@ -160,7 +161,7 @@ test.describe('Teclado', () => {
 
   test('el foco no se pierde al reiniciar o descartar', async ({ page }) => {
     await page.goto('./');
-    await startFiltered(page, 'sql', 'avanzado');
+    await openChallengeWith(page, SHORT_CHALLENGE);
     await finishChallenge(page, [true, true, true]);
     await page.getByRole('button', { name: 'Volver al inicio' }).first().click();
 

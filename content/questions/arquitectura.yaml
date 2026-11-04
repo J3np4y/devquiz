@@ -5,7 +5,7 @@
   prompt: "¿Qué objetivo tiene organizar una aplicación en capas?"
   options:
     - { id: a, text: "Separar responsabilidades como la interfaz, el negocio y los datos" }
-    - { id: b, text: "Conseguir que cada capa se ejecute en un servidor distinto" }
+    - { id: b, text: "Conseguir que cada capa se ejecute siempre en un servidor físico distinto" }
     - { id: c, text: "Permitir que cada capa use un lenguaje de programación diferente" }
     - { id: d, text: "Eliminar la necesidad de una base de datos" }
   correct: a
@@ -69,7 +69,7 @@
   type: concept
   prompt: "¿Qué aporta una cola de mensajes entre dos servicios?"
   options:
-    - { id: a, text: "Garantiza que el mensaje se procese en el mismo instante" }
+    - { id: a, text: "Garantiza que cada mensaje se procese en el mismo instante en que se envía, sin retrasos" }
     - { id: b, text: "Permite que el emisor siga funcionando aunque el receptor esté ocupado o caído" }
     - { id: c, text: "Elimina la necesidad de gestionar errores en el receptor" }
     - { id: d, text: "Obliga a que ambos servicios usen la misma base de datos" }
@@ -114,3 +114,159 @@
     - { id: d, text: "Guarda las llamadas y las reenvía todas juntas" }
   correct: b
   explanation: "Evita malgastar recursos esperando respuestas que no llegarán y da margen al servicio para recuperarse. Pasado un tiempo, deja pasar algunas llamadas de prueba para ver si ya funciona."
+
+- id: arq-404-001
+  topic: arquitectura
+  difficulty: principiante
+  type: concept
+  prompt: "¿Qué indica el código de estado HTTP 404?"
+  options:
+    - { id: a, text: "Que el servidor ha fallado" }
+    - { id: b, text: "Que hace falta iniciar sesión" }
+    - { id: c, text: "Que no se ha encontrado el recurso" }
+    - { id: d, text: "Que la petición ha tenido éxito" }
+  correct: c
+  explanation: "404 significa \"Not Found\". El servidor responde con normalidad, pero no encuentra el recurso solicitado."
+
+- id: arq-clases-http-001
+  topic: arquitectura
+  difficulty: principiante
+  type: concept
+  prompt: "¿Qué diferencia hay entre los códigos HTTP 4xx y 5xx?"
+  options:
+    - { id: a, text: "4xx son errores del cliente, y 5xx, errores del servidor" }
+    - { id: b, text: "4xx son errores del servidor, y 5xx, errores del cliente" }
+    - { id: c, text: "4xx son avisos, y 5xx son respuestas correctas" }
+    - { id: d, text: "4xx son redirecciones, y 5xx son errores de red" }
+  correct: a
+  explanation: "Un 4xx indica que la petición es incorrecta, como un 400 o un 404. Un 5xx indica que el servidor no pudo atender una petición válida, como un 500."
+
+- id: arq-estado-001
+  topic: arquitectura
+  difficulty: principiante
+  type: concept
+  prompt: "¿Qué significa que una API REST sea sin estado?"
+  options:
+    - { id: a, text: "Que no puede guardar datos de ningún tipo en una base de datos externa" }
+    - { id: b, text: "Que cada petición contiene lo necesario para atenderla" }
+    - { id: c, text: "Que todas sus respuestas tienen el mismo código HTTP" }
+    - { id: d, text: "Que no admite autenticación de usuarios" }
+  correct: b
+  explanation: "El servidor no guarda el contexto del cliente entre peticiones. Esto facilita escalar, porque cualquier instancia puede atender cualquier petición."
+
+- id: arq-escalado-001
+  topic: arquitectura
+  difficulty: principiante
+  type: concept
+  prompt: "¿En qué consiste el escalado horizontal?"
+  options:
+    - { id: a, text: "En dar más CPU y memoria a la misma máquina" }
+    - { id: b, text: "En añadir más máquinas que repartan el trabajo" }
+    - { id: c, text: "En reescribir el código para que consuma menos" }
+    - { id: d, text: "En reducir el número de usuarios simultáneos" }
+  correct: b
+  explanation: "Consiste en repartir la carga entre más instancias. Dar más recursos a una misma máquina es el escalado vertical, que tiene un límite físico."
+
+- id: arq-balanceador-001
+  topic: arquitectura
+  difficulty: intermedio
+  type: concept
+  prompt: "¿Qué función principal tiene un balanceador de carga?"
+  options:
+    - { id: a, text: "Repartir las peticiones entre varias instancias en buen estado" }
+    - { id: b, text: "Guardar las respuestas para reducir el uso de la base de datos" }
+    - { id: c, text: "Transformar los datos entre distintos formatos" }
+    - { id: d, text: "Sustituir a la autenticación de los usuarios" }
+  correct: a
+  explanation: "Reparte el tráfico y deja de enviar peticiones a las instancias que no responden, lo que mejora la capacidad y la disponibilidad."
+
+- id: arq-microservicios-001
+  topic: arquitectura
+  difficulty: intermedio
+  type: concept
+  prompt: "¿Cuál es el principal coste de pasar de un monolito a microservicios?"
+  options:
+    - { id: a, text: "Que ya no se pueden usar bases de datos relacionales" }
+    - { id: b, text: "Que todos los equipos deben usar el mismo lenguaje" }
+    - { id: c, text: "Que aumenta la complejidad operativa y de los sistemas distribuidos" }
+    - { id: d, text: "Que cada cambio exige desplegar todos los servicios a la vez y en el mismo orden" }
+  correct: c
+  explanation: "A cambio del despliegue independiente aparecen fallos de red, consistencia entre servicios y más necesidad de monitorización. Por eso no suelen compensar en sistemas pequeños."
+
+- id: arq-replicas-001
+  topic: arquitectura
+  difficulty: intermedio
+  type: concept
+  prompt: "¿Qué efecto hay que tener en cuenta al leer de réplicas con replicación asíncrona?"
+  options:
+    - { id: a, text: "Que las escrituras se vuelven más lentas que las lecturas" }
+    - { id: b, text: "Que una lectura puede no ver una escritura reciente" }
+    - { id: c, text: "Que se pierde la posibilidad de crear índices" }
+    - { id: d, text: "Que solo se puede leer si el servidor principal está caído" }
+  correct: b
+  explanation: "La réplica aplica los cambios con cierto retraso. Por ejemplo, un usuario podría no ver lo que acaba de guardar, así que ciertas lecturas se dirigen al servidor principal."
+
+- id: arq-versiones-001
+  topic: arquitectura
+  difficulty: intermedio
+  type: concept
+  prompt: "¿Qué cambio en una API pública suele requerir publicar una nueva versión?"
+  options:
+    - { id: a, text: "Añadir un campo opcional a una respuesta" }
+    - { id: b, text: "Añadir un punto de acceso nuevo" }
+    - { id: c, text: "Mejorar el rendimiento de un punto de acceso" }
+    - { id: d, text: "Eliminar un campo que los clientes ya usan" }
+  correct: d
+  explanation: "Eliminar o renombrar un campo rompe a los clientes existentes. Los cambios que solo añaden algo suelen ser compatibles y no necesitan una nueva versión."
+
+- id: arq-saga-001
+  topic: arquitectura
+  difficulty: avanzado
+  type: concept
+  prompt: "¿Cómo mantiene la consistencia el patrón Saga en una operación entre varios servicios?"
+  options:
+    - { id: a, text: "Bloqueando todas las bases de datos hasta terminar" }
+    - { id: b, text: "Con transacciones locales y acciones compensatorias si algo falla" }
+    - { id: c, text: "Obligando a todos los servicios a compartir una misma base de datos con una sola transacción" }
+    - { id: d, text: "Repitiendo cada paso hasta que todos tengan éxito" }
+  correct: b
+  explanation: "Cada servicio confirma su parte por separado. Si un paso falla, se ejecutan acciones que deshacen los anteriores, como reembolsar un pago. La consistencia es eventual."
+
+- id: arq-outbox-001
+  topic: arquitectura
+  difficulty: avanzado
+  type: concept
+  prompt: "¿Qué problema resuelve el patrón Transactional Outbox?"
+  options:
+    - { id: a, text: "Guardar datos y publicar un evento de forma fiable, sin perder ninguno" }
+    - { id: b, text: "Evitar que un servicio reciba demasiadas peticiones a la vez cuando hay picos de tráfico" }
+    - { id: c, text: "Enviar correos electrónicos a los usuarios con menos retraso" }
+    - { id: d, text: "Reducir el tamaño de los mensajes entre servicios" }
+  correct: a
+  explanation: "El evento se guarda en la misma transacción que los datos, en una tabla, y otro proceso lo publica después. Así, un fallo entre ambas operaciones no pierde el evento, aunque puede llegar duplicado."
+
+- id: arq-cqrs-001
+  topic: arquitectura
+  difficulty: avanzado
+  type: concept
+  prompt: "¿Qué propone CQRS?"
+  options:
+    - { id: a, text: "Guardar todos los datos en una única tabla" }
+    - { id: b, text: "Dividir cada servicio en una función por cada petición" }
+    - { id: c, text: "Separar el modelo de escritura del modelo de lectura" }
+    - { id: d, text: "Sustituir todas las consultas por eventos" }
+  correct: c
+  explanation: "Permite optimizar por separado las lecturas y las escrituras, cuyas necesidades pueden ser muy distintas. A cambio, añade complejidad, y las lecturas pueden ir con cierto retraso."
+
+- id: arq-hexagonal-001
+  topic: arquitectura
+  difficulty: avanzado
+  type: concept
+  prompt: "¿Cuál es el objetivo de la arquitectura hexagonal?"
+  options:
+    - { id: a, text: "Repartir el sistema en exactamente seis servicios" }
+    - { id: b, text: "Aislar el dominio de los detalles externos mediante puertos y adaptadores" }
+    - { id: c, text: "Hacer que la interfaz de usuario acceda directamente a la base de datos, sin capas intermedias" }
+    - { id: d, text: "Eliminar la necesidad de escribir tests de integración" }
+  correct: b
+  explanation: "La lógica de negocio define interfaces, o puertos, y las tecnologías concretas se conectan mediante adaptadores. Así se puede probar sin ellas y sustituirlas con menos impacto."

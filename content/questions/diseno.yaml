@@ -5,7 +5,7 @@
   prompt: "¿Qué busca evitar el principio DRY?"
   options:
     - { id: a, text: "Duplicar el mismo conocimiento en varios sitios del código" }
-    - { id: b, text: "Escribir funciones de más de unas pocas líneas" }
+    - { id: b, text: "Escribir funciones de más de unas pocas líneas o con demasiados parámetros" }
     - { id: c, text: "Añadir funcionalidades que aún no se necesitan" }
     - { id: d, text: "Depender de librerías de terceros" }
   correct: a
@@ -93,7 +93,7 @@
   options:
     - { id: a, text: "Porque reduce el acoplamiento y permite cambiar partes con más facilidad" }
     - { id: b, text: "Porque la herencia no está disponible en la mayoría de lenguajes" }
-    - { id: c, text: "Porque la composición siempre se ejecuta más rápido" }
+    - { id: c, text: "Porque la composición siempre se ejecuta más rápido y consume menos memoria" }
     - { id: d, text: "Porque la herencia impide escribir tests unitarios" }
   correct: a
   explanation: "La herencia ata la subclase a los detalles de su padre. Con composición, un objeto delega en otros a través de su interfaz, y esas piezas se pueden sustituir. La herencia sigue siendo útil para relaciones claras de tipo \"es un\"."
@@ -129,7 +129,7 @@
   prompt: "¿Qué propone el principio de inversión de dependencias?"
   options:
     - { id: a, text: "Que los módulos de bajo nivel controlen a los de alto nivel" }
-    - { id: b, text: "Que las dependencias se instalen siempre en su última versión" }
+    - { id: b, text: "Que las dependencias externas se instalen siempre en su última versión disponible" }
     - { id: c, text: "Que los módulos de alto y bajo nivel dependan de abstracciones" }
     - { id: d, text: "Que cada clase cree por sí misma todas sus dependencias" }
   correct: c
@@ -144,6 +144,202 @@
     - { id: a, text: "Garantizar que una clase tenga una única instancia" }
     - { id: b, text: "Intercambiar un algoritmo en ejecución sin cambiar a quien lo usa" }
     - { id: c, text: "Notificar a varios objetos cuando cambia un estado" }
-    - { id: d, text: "Adaptar una interfaz existente a la que espera un cliente" }
+    - { id: d, text: "Adaptar una interfaz existente a la que espera un cliente, sin modificar el código original" }
   correct: b
   explanation: "Strategy encapsula cada algoritmo tras una interfaz común, y quien lo usa recibe el que corresponda. Las demás opciones describen los patrones Singleton, Observer y Adapter."
+
+- id: dis-yagni-001
+  topic: diseno
+  difficulty: principiante
+  type: concept
+  prompt: "¿Qué recomienda el principio YAGNI?"
+  options:
+    - { id: a, text: "Escribir los tests antes que el código" }
+    - { id: b, text: "No añadir funcionalidad hasta que se necesite de verdad" }
+    - { id: c, text: "Evitar la duplicación de conocimiento en el código" }
+    - { id: d, text: "Usar siempre la solución más general posible" }
+  correct: b
+  explanation: "YAGNI significa \"You Aren't Gonna Need It\". Lo construido por si acaso cuesta tiempo y mantenimiento, y a menudo nunca se llega a usar."
+
+- id: dis-nombres-001
+  topic: diseno
+  difficulty: principiante
+  type: code
+  language: javascript
+  prompt: "¿Cuál es el principal problema de legibilidad de esta función?"
+  code: |
+    function calc(a, b) {
+      return a * b * 0.21;
+    }
+  options:
+    - { id: a, text: "Que debería ser una función flecha" }
+    - { id: b, text: "Que tiene demasiados parámetros" }
+    - { id: c, text: "Que usa una multiplicación en vez de un bucle" }
+    - { id: d, text: "Que los nombres y el 0.21 no revelan su intención" }
+  correct: d
+  explanation: "Nada indica qué se calcula. Con nombres como `vatAmount(price, quantity)` y una constante `VAT_RATE`, el código se entiende sin necesidad de comentarios."
+
+- id: dis-cohesion-001
+  topic: diseno
+  difficulty: principiante
+  type: concept
+  prompt: "¿Qué significa que un módulo tenga alta cohesión?"
+  options:
+    - { id: a, text: "Que sus partes están relacionadas y persiguen un mismo objetivo" }
+    - { id: b, text: "Que depende de muchos otros módulos del sistema para poder realizar su trabajo" }
+    - { id: c, text: "Que contiene la mayor parte del código del sistema" }
+    - { id: d, text: "Que todas sus funciones son públicas" }
+  correct: a
+  explanation: "Un módulo cohesionado tiene un propósito claro, lo que facilita entenderlo y cambiarlo. Se busca alta cohesión y bajo acoplamiento entre módulos."
+
+- id: dis-refactor-001
+  topic: diseno
+  difficulty: principiante
+  type: concept
+  prompt: "¿Qué es refactorizar?"
+  options:
+    - { id: a, text: "Añadir funcionalidades nuevas a un programa" }
+    - { id: b, text: "Corregir errores detectados en producción" }
+    - { id: c, text: "Mejorar la estructura del código sin cambiar su comportamiento" }
+    - { id: d, text: "Reescribir el programa completo en otro lenguaje para que sea más fácil de mantener" }
+  correct: c
+  explanation: "El objetivo es que el código sea más fácil de entender y cambiar, manteniendo lo que hace. Los tests ayudan a confirmar que el comportamiento no ha variado."
+
+- id: dis-isp-001
+  topic: diseno
+  difficulty: intermedio
+  type: code
+  language: python
+  prompt: "¿Qué principio incumple este diseño?"
+  code: |
+    class Device:
+        def print_page(self): ...
+        def scan(self): ...
+        def fax(self): ...
+
+    class BasicPrinter(Device):
+        def print_page(self):
+            return "imprimiendo"
+
+        def scan(self):
+            raise NotImplementedError
+
+        def fax(self):
+            raise NotImplementedError
+  options:
+    - { id: a, text: "Abierto/cerrado" }
+    - { id: b, text: "No te repitas (DRY)" }
+    - { id: c, text: "Segregación de interfaces" }
+    - { id: d, text: "Inversión de dependencias" }
+  correct: c
+  explanation: "`BasicPrinter` depende de métodos que no necesita. Es preferible tener interfaces pequeñas y específicas, como `Printer` y `Scanner`, que cada clase implemente según corresponda."
+
+- id: dis-demeter-001
+  topic: diseno
+  difficulty: intermedio
+  type: code
+  language: javascript
+  prompt: "¿Qué principio incumple esta línea?"
+  code: |
+    const city = order.getCustomer().getAddress().getCity();
+  options:
+    - { id: a, text: "Ley de Demeter" }
+    - { id: b, text: "Sustitución de Liskov" }
+    - { id: c, text: "Responsabilidad única" }
+    - { id: d, text: "YAGNI" }
+  correct: a
+  explanation: "El código conoce la estructura interna de varios objetos encadenados, así que un cambio en cualquiera de ellos lo afecta. La ley de Demeter propone hablar solo con los colaboradores directos."
+
+- id: dis-observer-001
+  topic: diseno
+  difficulty: intermedio
+  type: concept
+  prompt: "¿Qué permite el patrón Observer?"
+  options:
+    - { id: a, text: "Crear objetos sin especificar su clase concreta, delegando esa decisión en un método" }
+    - { id: b, text: "Avisar a varios objetos de un cambio sin que el emisor los conozca" }
+    - { id: c, text: "Añadir comportamiento a un objeto envolviéndolo con otro" }
+    - { id: d, text: "Ofrecer una interfaz simple a un subsistema complejo" }
+  correct: b
+  explanation: "Los observadores se suscriben y el emisor los notifica sin depender de sus clases concretas. Las otras opciones describen los patrones Factory, Decorator y Facade."
+
+- id: dis-factory-001
+  topic: diseno
+  difficulty: intermedio
+  type: concept
+  prompt: "¿Qué ventaja aporta un patrón Factory?"
+  options:
+    - { id: a, text: "Garantiza que exista una sola instancia de cada clase" }
+    - { id: b, text: "Hace que todos los objetos sean inmutables" }
+    - { id: c, text: "Elimina la necesidad de usar interfaces, porque todas las clases quedan en un solo módulo" }
+    - { id: d, text: "Centraliza la creación, y quien la usa no depende de la clase concreta" }
+  correct: d
+  explanation: "Quien usa el objeto solo pide lo que necesita, y la decisión sobre qué clase crear queda en un único lugar. Así se pueden añadir tipos nuevos sin tocar el resto del código."
+
+- id: dis-decorator-001
+  topic: diseno
+  difficulty: avanzado
+  type: code
+  language: python
+  prompt: "¿Qué patrón de diseño aplica `LoggingRepository`?"
+  code: |
+    class LoggingRepository:
+        def __init__(self, repository, logger):
+            self.repository = repository
+            self.logger = logger
+
+        def save(self, item):
+            self.logger.info(f"Guardando {item}")
+            return self.repository.save(item)
+  options:
+    - { id: a, text: "Singleton" }
+    - { id: b, text: "Decorator" }
+    - { id: c, text: "Factory" }
+    - { id: d, text: "Observer" }
+  correct: b
+  explanation: "Envuelve otro repositorio con la misma interfaz y le añade un comportamiento sin modificarlo. Además, se pueden combinar varios decoradores."
+
+- id: dis-tell-001
+  topic: diseno
+  difficulty: avanzado
+  type: code
+  language: python
+  prompt: "¿Qué mejora sugiere el principio \"Tell, Don't Ask\" para este código?"
+  code: |
+    if account.balance >= amount:
+        account.balance -= amount
+    else:
+        raise ValueError("Saldo insuficiente")
+  options:
+    - { id: a, text: "Mover esta lógica a un método como `account.withdraw(amount)`" }
+    - { id: b, text: "Sustituir el `if` por un bloque `try` y `except`" }
+    - { id: c, text: "Hacer que `balance` sea una variable global" }
+    - { id: d, text: "Copiar esta comprobación en todos los lugares que modifiquen el saldo de la cuenta" }
+  correct: a
+  explanation: "En lugar de pedir datos a un objeto para decidir por él, se le dice qué hacer. Así, la regla de negocio queda junto a los datos y no se repite por el código."
+
+- id: dis-inmutable-001
+  topic: diseno
+  difficulty: avanzado
+  type: concept
+  prompt: "¿Qué ventaja tienen los objetos inmutables en código concurrente?"
+  options:
+    - { id: a, text: "Ocupan siempre menos memoria" }
+    - { id: b, text: "Se pueden compartir entre hilos sin sincronizar su acceso" }
+    - { id: c, text: "Hacen que los hilos se ejecuten más rápido" }
+    - { id: d, text: "Evitan cualquier condición de carrera del programa, sin necesidad de otros mecanismos" }
+  correct: b
+  explanation: "Si un objeto no cambia, ningún hilo puede ver un estado a medias. Eso no elimina todas las condiciones de carrera: la coordinación entre operaciones sigue siendo necesaria."
+
+- id: dis-singleton-001
+  topic: diseno
+  difficulty: avanzado
+  type: concept
+  prompt: "¿Cuál es la crítica más habitual al patrón Singleton?"
+  options:
+    - { id: a, text: "Que crea demasiadas instancias de la clase" }
+    - { id: b, text: "Que no se puede implementar en lenguajes modernos" }
+    - { id: c, text: "Que introduce estado global y dificulta los tests" }
+    - { id: d, text: "Que obliga a usar herencia múltiple" }
+  correct: c
+  explanation: "Oculta dependencias tras un acceso global y comparte estado entre tests. Suele ser preferible crear una instancia y pasarla mediante inyección de dependencias."

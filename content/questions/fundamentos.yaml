@@ -140,7 +140,7 @@
   options:
     - { id: a, text: "Porque nunca hace falta mover los elementos existentes" }
     - { id: b, text: "Porque la capacidad crece en proporción y las copias son infrecuentes" }
-    - { id: c, text: "Porque la memoria se reserva por adelantado para el tamaño máximo" }
+    - { id: c, text: "Porque la memoria se reserva por adelantado para el tamaño máximo que pueda alcanzar el array" }
     - { id: d, text: "Porque internamente los elementos se guardan en una lista enlazada" }
   correct: b
   explanation: "Al llenarse, el array se copia a uno mayor, por ejemplo del doble de capacidad. Esa copia cuesta O(n), pero ocurre tan pocas veces que, repartida entre todas las inserciones, el coste medio es constante."
@@ -157,3 +157,221 @@
     - { id: d, text: "Que tenga muchas aristas" }
   correct: c
   explanation: "Dijkstra da por definitiva la distancia de un nodo al visitarlo, lo que deja de ser seguro si una arista negativa puede acortarla después. En ese caso se usa, por ejemplo, Bellman-Ford."
+
+- id: fund-indice-001
+  topic: fundamentos
+  difficulty: principiante
+  type: concept
+  prompt: "¿Cuál es el coste de acceder a un elemento de un array por su índice?"
+  options:
+    - { id: a, text: "O(1)" }
+    - { id: b, text: "O(log n)" }
+    - { id: c, text: "O(n)" }
+    - { id: d, text: "O(n²)" }
+  correct: a
+  explanation: "Los elementos están contiguos en memoria, así que su posición se calcula directamente a partir del índice, sin recorrer los anteriores."
+
+- id: fund-bucle-001
+  topic: fundamentos
+  difficulty: principiante
+  type: code
+  language: python
+  prompt: "¿Qué imprime este código?"
+  code: |
+    total = 0
+    for i in range(1, 4):
+        total += i
+    print(total)
+  options:
+    - { id: a, text: "10" }
+    - { id: b, text: "3" }
+    - { id: c, text: "6" }
+    - { id: d, text: "4" }
+  correct: c
+  explanation: "`range(1, 4)` genera 1, 2 y 3, porque el límite superior no se incluye. Su suma es 6."
+  verify: output
+
+- id: fund-enlazada-001
+  topic: fundamentos
+  difficulty: principiante
+  type: concept
+  prompt: "¿En qué operación destaca una lista enlazada frente a un array?"
+  options:
+    - { id: a, text: "Acceder a un elemento por su índice" }
+    - { id: b, text: "Buscar un valor si los datos están ordenados" }
+    - { id: c, text: "Ocupar menos memoria por cada elemento" }
+    - { id: d, text: "Insertar un elemento al principio" }
+  correct: d
+  explanation: "Insertar al principio solo requiere actualizar unos enlaces, sin mover el resto de elementos. A cambio, llegar a una posición concreta exige recorrer la lista."
+
+- id: fund-logica-001
+  topic: fundamentos
+  difficulty: principiante
+  type: code
+  language: javascript
+  prompt: "¿Qué imprime este código?"
+  code: |
+    console.log(5 > 3 && 2 > 4);
+    console.log(5 > 3 || 2 > 4);
+  options:
+    - { id: a, text: "true\ntrue" }
+    - { id: b, text: "false\ntrue" }
+    - { id: c, text: "true\nfalse" }
+    - { id: d, text: "false\nfalse" }
+  correct: b
+  explanation: "`&&` exige que ambas condiciones sean verdaderas y `||` que lo sea al menos una. Aquí, la primera es verdadera y la segunda, falsa."
+  verify: output
+
+- id: fund-abb-001
+  topic: fundamentos
+  difficulty: intermedio
+  type: concept
+  prompt: "¿Qué propiedad tiene un árbol binario de búsqueda?"
+  options:
+    - { id: a, text: "Todas sus hojas están a la misma profundidad" }
+    - { id: b, text: "Cada nodo tiene exactamente dos hijos" }
+    - { id: c, text: "A la izquierda de cada nodo hay valores menores, y a la derecha, mayores" }
+    - { id: d, text: "El valor de cada nodo es mayor que el de todos sus descendientes, a izquierda y a derecha" }
+  correct: c
+  explanation: "Esta propiedad permite descartar una rama en cada paso de una búsqueda. Si el árbol está equilibrado, el coste es O(log n). Que cada nodo sea mayor que sus hijos describe un montículo, no un árbol de búsqueda."
+
+- id: fund-inorden-001
+  topic: fundamentos
+  difficulty: intermedio
+  type: code
+  language: python
+  prompt: "¿Qué imprime este recorrido del árbol?"
+  code: |
+    def inorder(node):
+        if node is None:
+            return []
+        left, value, right = node
+        return inorder(left) + [value] + inorder(right)
+
+    tree = ((None, 1, None), 2, (None, 3, None))
+    print(inorder(tree))
+  options:
+    - { id: a, text: "[2, 1, 3]" }
+    - { id: b, text: "[1, 3, 2]" }
+    - { id: c, text: "[3, 2, 1]" }
+    - { id: d, text: "[1, 2, 3]" }
+  correct: d
+  explanation: "El recorrido en orden visita la rama izquierda, el nodo y la rama derecha. En un árbol binario de búsqueda, esto devuelve los valores ordenados."
+  verify: output
+
+- id: fund-log-001
+  topic: fundamentos
+  difficulty: intermedio
+  type: code
+  language: python
+  prompt: "¿Cuál es la complejidad temporal de esta función en el peor caso?"
+  code: |
+    def search(items, target):
+        low, high = 0, len(items) - 1
+        while low <= high:
+            middle = (low + high) // 2
+            if items[middle] == target:
+                return middle
+            if items[middle] < target:
+                low = middle + 1
+            else:
+                high = middle - 1
+        return -1
+  options:
+    - { id: a, text: "O(1)" }
+    - { id: b, text: "O(log n)" }
+    - { id: c, text: "O(n)" }
+    - { id: d, text: "O(n log n)" }
+  correct: b
+  explanation: "Es una búsqueda binaria: cada vuelta descarta la mitad de los elementos que quedan, así que el número de vueltas crece con el logaritmo de n."
+
+- id: fund-pertenencia-001
+  topic: fundamentos
+  difficulty: intermedio
+  type: concept
+  prompt: "Hay que comprobar muchas veces si un valor está entre miles de datos. ¿Qué estructura suele ser la más adecuada?"
+  options:
+    - { id: a, text: "Una lista sin ordenar" }
+    - { id: b, text: "Una pila" }
+    - { id: c, text: "Un conjunto basado en hash" }
+    - { id: d, text: "Una lista enlazada" }
+  correct: c
+  explanation: "Un conjunto basado en hash comprueba la pertenencia en O(1) de media, mientras que recorrer una lista cuesta O(n) en cada comprobación."
+
+- id: fund-memo-001
+  topic: fundamentos
+  difficulty: avanzado
+  type: code
+  language: python
+  prompt: "¿Qué imprime este código?"
+  code: |
+    calls = 0
+
+    def fib(n, memo={}):
+        global calls
+        calls += 1
+        if n < 2:
+            return n
+        if n not in memo:
+            memo[n] = fib(n - 1) + fib(n - 2)
+        return memo[n]
+
+    fib(5)
+    print(calls)
+  options:
+    - { id: a, text: "5" }
+    - { id: b, text: "15" }
+    - { id: c, text: "9" }
+    - { id: d, text: "32" }
+  correct: c
+  explanation: "La memoización evita repetir cálculos: cada valor se calcula una vez y las llamadas siguientes lo reutilizan. Sin ella, `fib(5)` haría 15 llamadas, y el coste crecería de forma exponencial."
+  verify: output
+
+- id: fund-monticulo-001
+  topic: fundamentos
+  difficulty: avanzado
+  type: code
+  language: python
+  prompt: "¿Qué imprime este código?"
+  code: |
+    import heapq
+
+    heap = []
+    for value in [5, 1, 3]:
+        heapq.heappush(heap, value)
+
+    print(heapq.heappop(heap), heapq.heappop(heap))
+  options:
+    - { id: a, text: "5 1" }
+    - { id: b, text: "1 3" }
+    - { id: c, text: "5 3" }
+    - { id: d, text: "1 5" }
+  correct: b
+  explanation: "`heapq` implementa un montículo de mínimos: `heappop` siempre extrae el menor elemento, en O(log n). Por eso se usa para colas de prioridad."
+  verify: output
+
+- id: fund-quicksort-001
+  topic: fundamentos
+  difficulty: avanzado
+  type: concept
+  prompt: "¿Cuándo degrada quicksort hasta O(n²)?"
+  options:
+    - { id: a, text: "Cuando el pivote elegido divide los datos de forma muy desigual" }
+    - { id: b, text: "Cuando los datos contienen números negativos" }
+    - { id: c, text: "Cuando el pivote es siempre el valor mediano de cada partición que se va procesando" }
+    - { id: d, text: "Cuando hay más datos que memoria caché disponible" }
+  correct: a
+  explanation: "Si el pivote deja casi todos los elementos a un lado, cada paso reduce el problema en muy poco. Por ejemplo, ocurre con datos ya ordenados si el pivote es siempre el primero. Elegirlo al azar lo hace muy improbable."
+
+- id: fund-topologico-001
+  topic: fundamentos
+  difficulty: avanzado
+  type: concept
+  prompt: "¿Qué debe cumplir un grafo para admitir un orden topológico?"
+  options:
+    - { id: a, text: "Ser no dirigido y conexo" }
+    - { id: b, text: "Ser dirigido y no tener ciclos" }
+    - { id: c, text: "Tener pesos positivos en sus aristas" }
+    - { id: d, text: "Tener un único nodo sin aristas de salida" }
+  correct: b
+  explanation: "El orden topológico coloca cada nodo antes de aquellos que dependen de él. Con un ciclo, ningún nodo del ciclo podría ir primero. Se usa, por ejemplo, para ordenar tareas con dependencias."
