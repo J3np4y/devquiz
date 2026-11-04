@@ -30,7 +30,9 @@ jobs:
       - run: npm run typecheck
       - run: npm run test
       - run: npm run content:check
-      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      # Compila la app y la prueba en escritorio y móvil.
+      - run: npm run test:e2e
       - uses: actions/upload-pages-artifact@v5
         if: github.ref == 'refs/heads/main'
         with:

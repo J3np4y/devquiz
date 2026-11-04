@@ -42,6 +42,12 @@ describe('App', () => {
   it('explica por qué el repaso no está disponible', () => {
     expect(html).toContain('Aún no tienes preguntas falladas');
   });
+
+  it('no permite empezar un reto a medida si no hay preguntas', () => {
+    const empty = renderToString(<App bank={[]} storage={null} />);
+    expect(empty).toContain('No hay preguntas con este filtro');
+    expect(empty).toMatch(/<button[^>]*type="submit"[^>]*disabled/);
+  });
 });
 
 describe('RichText', () => {

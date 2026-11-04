@@ -39,7 +39,8 @@ export function bankPlugin(): Plugin {
           if (!question.code || !question.language) return question;
           const codeHtml = await codeToHtml(question.code.trimEnd(), {
             lang: question.language,
-            themes: { light: 'github-light', dark: 'github-dark' },
+            // La variante clara normal no alcanza el contraste AA sobre el fondo del bloque.
+            themes: { light: 'github-light-high-contrast', dark: 'github-dark' },
             defaultColor: false,
           });
           return { ...question, codeHtml };

@@ -46,12 +46,26 @@ export function Home({
   const [difficulty, setDifficulty] = useState<Difficulty | ''>('');
   const [confirmingReset, setConfirmingReset] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
+  const resetButtonRef = useRef<HTMLButtonElement>(null);
+  const cancelResetRef = useRef<HTMLButtonElement>(null);
+  const firstRender = useRef(true);
 
   // Al llegar desde otra pantalla, el foco y el scroll empiezan arriba.
   useEffect(() => {
     headingRef.current?.focus();
     window.scrollTo(0, 0);
   }, []);
+
+  // El botón pulsado desaparece al confirmar o cancelar, así que el foco debe ir a otro sitio.
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    (confirmingReset ? cancelResetRef : resetButtonRef).current?.focus();
+  }, [confirmingReset]);
+
+  const focusHeading = () => headingRef.current?.focus();
 
   const filters: ChallengeFilters = {
     ...(topic ? { topic } : {}),
@@ -90,7 +104,14 @@ export function Home({
             <button type="button" className="button button--primary" onClick={onResume}>
               Reanudar
             </button>
-            <button type="button" className="button" onClick={onDiscard}>
+            <button
+              type="button"
+              className="button"
+              onClick={() => {
+                onDiscard();
+                focusHeading();
+              }}
+            >
               Descartar
             </button>
           </div>
@@ -229,17 +250,28 @@ export function Home({
                   onClick={() => {
                     onReset();
                     setConfirmingReset(false);
+                    focusHeading();
                   }}
                 >
                   Sí, borrar todo
                 </button>
-                <button type="button" className="button" onClick={() => setConfirmingReset(false)}>
+                <button
+                  type="button"
+                  className="button"
+                  ref={cancelResetRef}
+                  onClick={() => setConfirmingReset(false)}
+                >
                   Cancelar
                 </button>
               </div>
             </div>
           ) : (
-            <button type="button" className="button button--quiet" onClick={() => setConfirmingReset(true)}>
+            <button
+              type="button"
+              className="button button--quiet"
+              ref={resetButtonRef}
+              onClick={() => setConfirmingReset(true)}
+            >
               Reiniciar progreso
             </button>
           ))}
