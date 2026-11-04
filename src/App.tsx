@@ -21,6 +21,7 @@ import { Home } from './ui/Home.tsx';
 import type { AppQuestion } from './ui/labels.ts';
 import { Quiz } from './ui/Quiz.tsx';
 import { Results } from './ui/Results.tsx';
+import { useClickGuard } from './ui/useClickGuard.ts';
 import { CHALLENGE, HOME, navigate, replaceRoute, resultsHash, useHashRoute } from './ui/useHashRoute.ts';
 import { useProgress } from './ui/useProgress.ts';
 
@@ -61,6 +62,10 @@ export function App({ bank, storage }: AppProps) {
   useEffect(() => {
     document.title = title;
   }, [title]);
+
+  useClickGuard(
+    inChallenge ? `reto-${active.id}-${active.currentIndex}` : inResults ? `resultado-${finished.id}` : 'inicio',
+  );
 
   const start = (mode: ChallengeMode, questions: readonly Question[]) => {
     const now = Date.now();
