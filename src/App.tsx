@@ -10,7 +10,7 @@ import {
   discardActive,
   startSession,
 } from './core/session.ts';
-import type { StorageLike } from './core/storage.ts';
+import { requestPersistentStorage, type StorageLike } from './core/storage.ts';
 import type { ChallengeFilters, ChallengeMode, Question } from './core/types.ts';
 import { Home } from './ui/Home.tsx';
 import type { AppQuestion } from './ui/labels.ts';
@@ -63,6 +63,7 @@ export function App({ bank, storage }: AppProps) {
       ...(filters ? { filters } : {}),
     });
     if (!session) return;
+    void requestPersistentStorage();
     update((current) => startSession(current, session, now));
     navigate(CHALLENGE);
   };

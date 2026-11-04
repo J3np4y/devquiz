@@ -2,7 +2,7 @@
 
 Plan de implementación de [requirements.md](requirements.md).
 
-**Estado:** en desarrollo. Las fases 0, 1, 2, 3 y 4 están terminadas.
+**Estado:** en desarrollo. Las fases 0 a 5 están terminadas.
 
 ## Stack
 
