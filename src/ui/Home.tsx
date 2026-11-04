@@ -14,18 +14,6 @@ const STATUS_NOTICES: Partial<Record<LoadStatus, string>> = {
   unavailable: 'Tu navegador no permite guardar datos, así que el progreso se perderá al cerrar la página.',
 };
 
-/** En iOS, solo las apps instaladas quedan a salvo del borrado de datos de Safari. */
-function needsInstallHint() {
-  if (typeof window === 'undefined') return false;
-  const { userAgent, maxTouchPoints } = window.navigator;
-  // Los iPad modernos se identifican como Mac; se distinguen porque tienen pantalla táctil.
-  const isIos = /iPhone|iPad|iPod/.test(userAgent) || (/Macintosh/.test(userAgent) && maxTouchPoints > 1);
-  const isInstalled =
-    window.matchMedia('(display-mode: standalone)').matches ||
-    (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
-  return isIos && !isInstalled;
-}
-
 const percent = (accuracy: number | null) => (accuracy === null ? '—' : `${Math.round(accuracy * 100)} %`);
 
 interface HomeProps {
@@ -286,12 +274,6 @@ export function Home({
 
       <footer className="footer">
         <p>Sin cuentas ni seguimiento: tu progreso solo se guarda en este dispositivo.</p>
-        {needsInstallHint() && (
-          <p className="install-hint">
-            En iPhone y iPad, Safari puede borrar el progreso de los sitios que no visitas durante una
-            semana. Para evitarlo, añade DevQuiz a la pantalla de inicio desde el botón Compartir.
-          </p>
-        )}
       </footer>
     </main>
   );

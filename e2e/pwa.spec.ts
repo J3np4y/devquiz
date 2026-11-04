@@ -69,23 +69,6 @@ test.describe('Instalación', () => {
     expect(sizes).toEqual(expect.arrayContaining(['192x192', '512x512']));
     expect(manifest.icons.some((icon: { purpose?: string }) => icon.purpose === 'maskable')).toBe(true);
   });
-
-  test.describe('en iPhone', () => {
-    test.use({
-      userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Safari/604.1',
-    });
-
-    test('aconseja añadir la app a la pantalla de inicio', async ({ page }) => {
-      await page.goto('./');
-      await expect(page.getByText('añade DevQuiz a la pantalla de inicio')).toBeVisible();
-    });
-  });
-
-  test('fuera de iOS no muestra ese consejo', async ({ page, browserName, isMobile }) => {
-    test.skip(browserName === 'webkit' && isMobile, 'Este proyecto emula un iPhone');
-    await page.goto('./');
-    await expect(page.getByText('añade DevQuiz a la pantalla de inicio')).toHaveCount(0);
-  });
 });
 
 test('pide almacenamiento persistente al empezar un reto, no al abrir la app', async ({ page }) => {

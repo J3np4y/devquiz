@@ -55,4 +55,3 @@ La fase 6 puede avanzar en paralelo desde el final de la fase 1.
 
 - **Contenido:** es el mayor trabajo del proyecto. Redactar 150 preguntas con buenas opciones incorrectas y explicaciones cuesta más que el código.
 - **Revisión:** Claude redacta las preguntas y no hay revisión humana. CI solo verifica el resultado de los fragmentos ejecutables, así que el contenido de las conceptuales depende de la revisión de Claude y puede contener errores que nadie más haya detectado.
-- **Borrado de datos en Safari:** puede eliminar los datos de un sitio tras 7 días de uso sin visitarlo. Las apps instaladas en la pantalla de inicio quedan exentas, y exportar el progreso queda para después del MVP.

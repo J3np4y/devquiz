@@ -118,32 +118,6 @@ test.describe('Aviso de guardado', () => {
   });
 });
 
-test.describe('Consejo de instalación', () => {
-  const macUserAgent =
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15';
-  const hint = (page: Page) => page.getByText('añade DevQuiz a la pantalla de inicio');
-  const withTouchPoints = (page: Page, points: number) =>
-    page.addInitScript((value) => {
-      Object.defineProperty(navigator, 'maxTouchPoints', { get: () => value });
-    }, points);
-
-  test.describe('con agente de Mac', () => {
-    test.use({ userAgent: macUserAgent });
-
-    test('sale en un iPad, que se identifica como Mac', async ({ page }) => {
-      await withTouchPoints(page, 5);
-      await page.goto('./');
-      await expect(hint(page)).toBeVisible();
-    });
-
-    test('no sale en un Mac de verdad', async ({ page }) => {
-      await withTouchPoints(page, 0);
-      await page.goto('./');
-      await expect(hint(page)).toHaveCount(0);
-    });
-  });
-});
-
 test('los filtros tienen letra suficiente para que iOS no amplíe la página', async ({ page }) => {
   await page.goto('./');
   for (const label of ['Tema', 'Nivel']) {
