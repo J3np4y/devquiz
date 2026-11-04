@@ -5,6 +5,7 @@ import { sessionResult } from '../core/session.ts';
 import type { LoadStatus } from '../core/storage.ts';
 import type { Bank, ChallengeFilters, Difficulty, Progress, Session, Topic } from '../core/types.ts';
 import { DIFFICULTIES, DIFFICULTY_LABELS, MODE_LABELS, TOPICS, TOPIC_LABELS } from './labels.ts';
+import { Icon } from './Icon.tsx';
 import { SaveFailedNotice } from './QuestionParts.tsx';
 
 const STATUS_NOTICES: Partial<Record<LoadStatus, string>> = {
@@ -77,12 +78,17 @@ export function Home({
   const activeResult = active ? sessionResult(active) : null;
 
   return (
-    <main className="page">
-      <header className="masthead">
-        <h1 tabIndex={-1} ref={headingRef}>
-          DevQuiz
-        </h1>
-        <p>Repasa conocimientos de desarrollo en sesiones breves.</p>
+    <main className="page page--wide">
+      <header className="brand">
+        <span className="brand-mark">
+          <Icon name="code" />
+        </span>
+        <div>
+          <h1 tabIndex={-1} ref={headingRef}>
+            DevQuiz
+          </h1>
+          <p>Repasa conocimientos de desarrollo en sesiones breves.</p>
+        </div>
       </header>
 
       {notice && <p className="notice" role="alert">{notice}</p>}
@@ -113,82 +119,92 @@ export function Home({
         </section>
       )}
 
-      <section className="card" aria-labelledby="quick-title">
+      <section className="hero" aria-labelledby="quick-title">
+        <Icon name="code" className="hero-glyph" />
         <h2 id="quick-title">Reto rápido</h2>
         <p>{CHALLENGE_SIZE} preguntas variadas, de distintos temas y niveles.</p>
-        <button type="button" className="button button--primary" onClick={onStartMixed}>
+        <button type="button" className="button button--hero" onClick={onStartMixed}>
           Empezar reto rápido
+          <Icon name="arrow" />
         </button>
       </section>
 
-      <section className="card" aria-labelledby="custom-title">
-        <h2 id="custom-title">Reto a medida</h2>
-        <form
-          className="filters"
-          onSubmit={(event) => {
-            event.preventDefault();
-            if (available > 0) onStartFiltered(filters);
-          }}
-        >
-          <label>
-            Tema
-            <select value={topic} onChange={(event) => setTopic(event.target.value as Topic | '')}>
-              <option value="">Todos los temas</option>
-              {TOPICS.map((value) => (
-                <option key={value} value={value}>
-                  {TOPIC_LABELS[value]}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Nivel
-            <select
-              value={difficulty}
-              onChange={(event) => setDifficulty(event.target.value as Difficulty | '')}
+      <div className="home-grid">
+        <section className="card" aria-labelledby="custom-title">
+          <h2 id="custom-title">Reto a medida</h2>
+          <form
+            className="filters"
+            onSubmit={(event) => {
+              event.preventDefault();
+              if (available > 0) onStartFiltered(filters);
+            }}
+          >
+            <label>
+              Tema
+              <span className="select">
+                <select value={topic} onChange={(event) => setTopic(event.target.value as Topic | '')}>
+                  <option value="">Todos los temas</option>
+                  {TOPICS.map((value) => (
+                    <option key={value} value={value}>
+                      {TOPIC_LABELS[value]}
+                    </option>
+                  ))}
+                </select>
+                <Icon name="chevron" />
+              </span>
+            </label>
+            <label>
+              Nivel
+              <span className="select">
+                <select
+                  value={difficulty}
+                  onChange={(event) => setDifficulty(event.target.value as Difficulty | '')}
+                >
+                  <option value="">Todos los niveles</option>
+                  {DIFFICULTIES.map((value) => (
+                    <option key={value} value={value}>
+                      {DIFFICULTY_LABELS[value]}
+                    </option>
+                  ))}
+                </select>
+                <Icon name="chevron" />
+              </span>
+            </label>
+            <p id="filter-help" className="help" role="status">
+              {available === 0 && 'No hay preguntas con este filtro. Prueba con otro.'}
+              {available > 0 && available < CHALLENGE_SIZE &&
+                `Solo hay ${available} ${available === 1 ? 'pregunta' : 'preguntas'} con este filtro, así que el reto será más corto.`}
+              {available >= CHALLENGE_SIZE && `El reto tendrá ${CHALLENGE_SIZE} preguntas.`}
+            </p>
+            <button
+              type="submit"
+              className="button button--wide"
+              disabled={available === 0}
+              aria-describedby="filter-help"
             >
-              <option value="">Todos los niveles</option>
-              {DIFFICULTIES.map((value) => (
-                <option key={value} value={value}>
-                  {DIFFICULTY_LABELS[value]}
-                </option>
-              ))}
-            </select>
-          </label>
-          <p id="filter-help" className="help" role="status">
-            {available === 0 && 'No hay preguntas con este filtro. Prueba con otro.'}
-            {available > 0 && available < CHALLENGE_SIZE &&
-              `Solo hay ${available} ${available === 1 ? 'pregunta' : 'preguntas'} con este filtro, así que el reto será más corto.`}
-            {available >= CHALLENGE_SIZE && `El reto tendrá ${CHALLENGE_SIZE} preguntas.`}
+              Empezar reto a medida
+            </button>
+          </form>
+        </section>
+
+        <section className="card" aria-labelledby="review-title">
+          <h2 id="review-title">Repaso de fallos</h2>
+          <p id="review-help">
+            {failedCount === 0
+              ? 'Aún no tienes preguntas falladas. Aparecerán aquí cuando falles alguna.'
+              : `Tienes ${failedCount} ${failedCount === 1 ? 'pregunta fallada' : 'preguntas falladas'}. Cada una sale de la lista al acertarla.`}
           </p>
           <button
-            type="submit"
-            className="button"
-            disabled={available === 0}
-            aria-describedby="filter-help"
+            type="button"
+            className="button button--wide card-action"
+            disabled={failedCount === 0}
+            aria-describedby="review-help"
+            onClick={onStartReview}
           >
-            Empezar reto a medida
+            Repasar fallos
           </button>
-        </form>
-      </section>
-
-      <section className="card" aria-labelledby="review-title">
-        <h2 id="review-title">Repaso de fallos</h2>
-        <p id="review-help">
-          {failedCount === 0
-            ? 'Aún no tienes preguntas falladas. Aparecerán aquí cuando falles alguna.'
-            : `Tienes ${failedCount} ${failedCount === 1 ? 'pregunta fallada' : 'preguntas falladas'}. Cada una sale de la lista al acertarla.`}
-        </p>
-        <button
-          type="button"
-          className="button"
-          disabled={failedCount === 0}
-          aria-describedby="review-help"
-          onClick={onStartReview}
-        >
-          Repasar fallos
-        </button>
-      </section>
+        </section>
+      </div>
 
       <section className="card" aria-labelledby="progress-title">
         <h2 id="progress-title">Tu progreso</h2>
@@ -225,7 +241,14 @@ export function Home({
                       <tr key={value}>
                         <th scope="row">{TOPIC_LABELS[value]}</th>
                         <td>{row.answered}</td>
-                        <td>{percent(row.accuracy)}</td>
+                        <td>
+                          <span className="meter-cell">
+                            <span className="meter" aria-hidden="true">
+                              <span className="meter-fill" style={{ width: `${(row.accuracy ?? 0) * 100}%` }} />
+                            </span>
+                            <span className="meter-value">{percent(row.accuracy)}</span>
+                          </span>
+                        </td>
                       </tr>,
                     ]
                   : [];

@@ -73,7 +73,7 @@ Aplicación web adaptable a móvil para que desarrolladores repasen conocimiento
 ### Experiencia de uso
 
 - Adaptar la interfaz a móvil y escritorio.
-- Seguir la preferencia de tema claro u oscuro del sistema.
+- Usar siempre el tema oscuro, sea cual sea la preferencia del sistema.
 - Mantener una navegación clara y permitir el uso mediante teclado: `1-4` para responder, `Enter` para avanzar y foco gestionado al cambiar de pantalla. Los atajos de una sola tecla se pueden desactivar.
 - Anunciar el resultado de cada respuesta a los lectores de pantalla y no depender solo del color para indicarlo.
 - Presentar los fragmentos de código de forma legible, con resaltado de sintaxis y scroll horizontal, sin ajuste de línea, indicando el entorno en que se ejecutan.

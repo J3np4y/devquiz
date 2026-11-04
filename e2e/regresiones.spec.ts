@@ -313,3 +313,10 @@ test('la política de seguridad está activa y no bloquea nada de la app', async
   expect(executed).toBe(false);
   expect(violations.filter((text) => !/script-src/.test(text))).toEqual([]);
 });
+
+test('el tema es oscuro aunque el sistema prefiera el claro', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'light' });
+  await page.goto('./');
+  const background = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  expect(background).toBe('rgb(14, 17, 22)');
+});

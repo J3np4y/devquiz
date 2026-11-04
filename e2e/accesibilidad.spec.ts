@@ -33,55 +33,49 @@ async function expectNoHorizontalScroll(page: Page) {
   expect(overflow).toBeLessThanOrEqual(0);
 }
 
-for (const colorScheme of ['light', 'dark'] as const) {
-  test.describe(`Axe y diseño en tema ${colorScheme === 'light' ? 'claro' : 'oscuro'}`, () => {
-    test.beforeEach(async ({ page }) => {
-      await page.emulateMedia({ colorScheme });
-    });
-
-    test('el inicio vacío', async ({ page }) => {
-      await page.goto('./');
-      await expectNoViolations(page, 'inicio vacío');
-      await expectNoHorizontalScroll(page);
-    });
-
-    test('el inicio con progreso, reto en curso y confirmación', async ({ page }) => {
-      await page.goto('./');
-      await startQuick(page);
-      await answer(page, false);
-      await page.getByRole('button', { name: 'Salir' }).click();
-      await page.getByRole('button', { name: 'Reiniciar progreso' }).click();
-      await expectNoViolations(page, 'inicio con progreso');
-      await expectNoHorizontalScroll(page);
-    });
-
-    test('los avisos del inicio', async ({ page }) => {
-      await seed(page, '{no es json');
-      await expect(page.getByRole('alert')).toBeVisible();
-      await expectNoViolations(page, 'inicio con aviso');
-    });
-
-    test('la pregunta antes y después de responder', async ({ page }) => {
-      await openChallengeWith(page, ['sql-ventana-001', 'js-igualdad-001']);
-      await expectNoViolations(page, 'pregunta sin responder');
-      await expectNoHorizontalScroll(page);
-      await answer(page, false);
-      await expectNoViolations(page, 'pregunta fallada');
-      await expectNoHorizontalScroll(page);
-      await next(page);
-      await answer(page, true);
-      await expectNoViolations(page, 'pregunta acertada');
-    });
-
-    test('los resultados con todas las preguntas del banco', async ({ page }) => {
-      await seed(page, seededProgress(bank));
-      await page.goto('./#/resultado/semilla');
-      await expect(page.locator('.review-item')).toHaveCount(bank.length);
-      await expectNoViolations(page, 'resultados con todo el banco');
-      await expectNoHorizontalScroll(page);
-    });
+test.describe('Axe y diseño', () => {
+  test('el inicio vacío', async ({ page }) => {
+    await page.goto('./');
+    await expectNoViolations(page, 'inicio vacío');
+    await expectNoHorizontalScroll(page);
   });
-}
+
+  test('el inicio con progreso, reto en curso y confirmación', async ({ page }) => {
+    await page.goto('./');
+    await startQuick(page);
+    await answer(page, false);
+    await page.getByRole('button', { name: 'Salir' }).click();
+    await page.getByRole('button', { name: 'Reiniciar progreso' }).click();
+    await expectNoViolations(page, 'inicio con progreso');
+    await expectNoHorizontalScroll(page);
+  });
+
+  test('los avisos del inicio', async ({ page }) => {
+    await seed(page, '{no es json');
+    await expect(page.getByRole('alert')).toBeVisible();
+    await expectNoViolations(page, 'inicio con aviso');
+  });
+
+  test('la pregunta antes y después de responder', async ({ page }) => {
+    await openChallengeWith(page, ['sql-ventana-001', 'js-igualdad-001']);
+    await expectNoViolations(page, 'pregunta sin responder');
+    await expectNoHorizontalScroll(page);
+    await answer(page, false);
+    await expectNoViolations(page, 'pregunta fallada');
+    await expectNoHorizontalScroll(page);
+    await next(page);
+    await answer(page, true);
+    await expectNoViolations(page, 'pregunta acertada');
+  });
+
+  test('los resultados con todas las preguntas del banco', async ({ page }) => {
+    await seed(page, seededProgress(bank));
+    await page.goto('./#/resultado/semilla');
+    await expect(page.locator('.review-item')).toHaveCount(bank.length);
+    await expectNoViolations(page, 'resultados con todo el banco');
+    await expectNoHorizontalScroll(page);
+  });
+});
 
 test.describe('Teclado', () => {
   test.skip(({ isMobile }) => isMobile, 'Solo aplica con teclado físico');
