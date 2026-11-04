@@ -18,6 +18,8 @@ export const LANGUAGES = ['javascript', 'python', 'sql'] as const;
 const ORDER_DEPENDENT_OPTION =
   /\b(todas|ninguna)( de)? las anteriores\b|\bambas (opciones|respuestas)\b|\blas dos primeras\b|\b(opciones|respuestas) [a-d] y [a-d]\b/i;
 
+const POSITIONAL_REFERENCE = /(primera|segunda|tercera|cuarta|última) opción|\bopción [a-d]\b/i;
+
 const nonBlank = z.string().refine((value) => value.trim().length > 0, 'no puede estar vacío');
 
 const optionSchema = z.strictObject({
@@ -40,7 +42,10 @@ export const questionSchema = z
     // La interfaz responde con las teclas 1-4.
     options: z.array(optionSchema).min(2).max(4),
     correct: z.string(),
-    explanation: nonBlank,
+    explanation: nonBlank.refine(
+      (value) => !POSITIONAL_REFERENCE.test(value),
+      'no puede referirse a la posición de una opción',
+    ),
     verify: z.enum(['output', 'error']).optional(),
   })
   .superRefine((question, ctx) => {

@@ -33,7 +33,6 @@ export type SessionStatus = 'active' | 'completed' | 'abandoned';
 export interface Session {
   id: string;
   mode: ChallengeMode;
-  filters?: ChallengeFilters;
   status: SessionStatus;
   startedAt: number;
   finishedAt?: number;

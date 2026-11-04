@@ -18,6 +18,10 @@ export default defineConfig({
   projects: [
     { name: 'escritorio', use: { ...devices['Desktop Chrome'] } },
     { name: 'movil', use: { ...devices['Pixel 7'] } },
+    // Motor de Safari en un iPhone emulado. Se parece a Safari, pero no es Safari real.
+    { name: 'iphone', use: { ...devices['iPhone 13'] } },
+    // Solo en CI: el equipo de desarrollo actual no permite lanzar el Firefox de Playwright.
+    ...(inCi ? [{ name: 'firefox', use: { ...devices['Desktop Firefox'] } }] : []),
   ],
   webServer: {
     command: `npm run build && npm run preview -- --port ${PORT} --strictPort`,

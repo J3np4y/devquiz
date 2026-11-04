@@ -33,3 +33,11 @@ export const resultsHash = (sessionId: string) => `#/resultado/${sessionId}`;
 export function navigate(hash: string) {
   window.location.hash = hash;
 }
+
+/**
+ * Cambia de ruta sin añadir una entrada al historial. Se usa en las redirecciones y al terminar
+ * un reto: si no, el botón Atrás volvería una y otra vez a una ruta que ya no tiene contenido.
+ */
+export function replaceRoute(hash: string) {
+  window.location.replace(hash);
+}

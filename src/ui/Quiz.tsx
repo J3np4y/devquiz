@@ -1,17 +1,29 @@
 import { useEffect, useRef } from 'react';
 import type { Session } from '../core/types.ts';
 import { MODE_LABELS, type AppQuestion } from './labels.ts';
-import { CodeBlock, QuestionTags, RichText, optionClass } from './QuestionParts.tsx';
+import { CodeBlock, QuestionTags, RichText, SaveFailedNotice, optionClass } from './QuestionParts.tsx';
 
 interface QuizProps {
   session: Session;
   question: AppQuestion;
+  saveFailed: boolean;
+  shortcutsEnabled: boolean;
+  onToggleShortcuts: (enabled: boolean) => void;
   onAnswer: (optionId: string) => void;
   onNext: () => void;
   onExit: () => void;
 }
 
-export function Quiz({ session, question, onAnswer, onNext, onExit }: QuizProps) {
+export function Quiz({
+  session,
+  question,
+  saveFailed,
+  shortcutsEnabled,
+  onToggleShortcuts,
+  onAnswer,
+  onNext,
+  onExit,
+}: QuizProps) {
   const item = session.questions[session.currentIndex];
   const answer = item?.answer;
   const position = session.currentIndex + 1;
@@ -39,7 +51,7 @@ export function Quiz({ session, question, onAnswer, onNext, onExit }: QuizProps)
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.repeat || event.ctrlKey || event.metaKey || event.altKey) return;
 
-      if (!answer && /^[1-4]$/.test(event.key)) {
+      if (!answer && shortcutsEnabled && /^[1-4]$/.test(event.key)) {
         const option = options[Number(event.key) - 1];
         if (option) onAnswer(option.id);
       } else if (answer && event.key === 'Enter' && !(event.target instanceof HTMLButtonElement)) {
@@ -64,6 +76,8 @@ export function Quiz({ session, question, onAnswer, onNext, onExit }: QuizProps)
           Salir
         </button>
       </header>
+
+      {saveFailed && <SaveFailedNotice />}
 
       <QuestionTags question={question} />
       <h1 className="prompt" tabIndex={-1} ref={headingRef}>
@@ -100,8 +114,16 @@ export function Quiz({ session, question, onAnswer, onNext, onExit }: QuizProps)
       </ol>
 
       {!answer && (
+        // Los atajos de una sola tecla deben poder desactivarse (WCAG 2.1.4).
         <p className="help keyboard-hint">
-          Pulsa de 1 a {Math.min(options.length, 4)} para responder.
+          <label className="checkbox">
+            <input
+              type="checkbox"
+              checked={shortcutsEnabled}
+              onChange={(event) => onToggleShortcuts(event.target.checked)}
+            />
+            Responder con las teclas de 1 a {Math.min(options.length, 4)}
+          </label>
         </p>
       )}
 

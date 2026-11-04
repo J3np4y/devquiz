@@ -81,7 +81,8 @@ test.describe('Instalación', () => {
     });
   });
 
-  test('fuera de iOS no muestra ese consejo', async ({ page }) => {
+  test('fuera de iOS no muestra ese consejo', async ({ page, browserName, isMobile }) => {
+    test.skip(browserName === 'webkit' && isMobile, 'Este proyecto emula un iPhone');
     await page.goto('./');
     await expect(page.getByText('añade DevQuiz a la pantalla de inicio')).toHaveCount(0);
   });

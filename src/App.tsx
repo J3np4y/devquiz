@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { failedQuestions } from './core/history.ts';
 import { selectFiltered, selectMixed, selectReview } from './core/selection.ts';
 import {
@@ -10,13 +10,18 @@ import {
   discardActive,
   startSession,
 } from './core/session.ts';
-import { requestPersistentStorage, type StorageLike } from './core/storage.ts';
-import type { ChallengeFilters, ChallengeMode, Question } from './core/types.ts';
+import {
+  loadShortcutsEnabled,
+  requestPersistentStorage,
+  saveShortcutsEnabled,
+  type StorageLike,
+} from './core/storage.ts';
+import type { ChallengeMode, Question } from './core/types.ts';
 import { Home } from './ui/Home.tsx';
 import type { AppQuestion } from './ui/labels.ts';
 import { Quiz } from './ui/Quiz.tsx';
 import { Results } from './ui/Results.tsx';
-import { CHALLENGE, HOME, navigate, resultsHash, useHashRoute } from './ui/useHashRoute.ts';
+import { CHALLENGE, HOME, navigate, replaceRoute, resultsHash, useHashRoute } from './ui/useHashRoute.ts';
 import { useProgress } from './ui/useProgress.ts';
 
 interface AppProps {
@@ -27,20 +32,24 @@ interface AppProps {
 export function App({ bank, storage }: AppProps) {
   const route = useHashRoute();
   const { progress, status, saveFailed, update, reset } = useProgress(bank, storage);
+  const [shortcutsEnabled, setShortcutsEnabled] = useState(() => loadShortcutsEnabled(storage));
   const questionsById = useMemo(() => new Map(bank.map((question) => [question.id, question])), [bank]);
 
   const active = activeSession(progress);
   const activeItem = active && currentQuestion(active);
   const activeQuestion = activeItem ? questionsById.get(activeItem.questionId) : undefined;
+  // Solo un reto terminado tiene resultados: en otro, lo no respondido parecería un fallo.
   const finished =
-    route.name === 'results' ? progress.sessions.find((session) => session.id === route.sessionId) : undefined;
+    route.name === 'results'
+      ? progress.sessions.find((session) => session.id === route.sessionId && session.status === 'completed')
+      : undefined;
 
   const inChallenge = route.name === 'challenge' && active && activeQuestion;
   const inResults = route.name === 'results' && finished;
 
   // Una ruta sin contenido, como un reto ya terminado al volver atrás, lleva al inicio.
   useEffect(() => {
-    if (route.name !== 'home' && !inChallenge && !inResults) navigate(HOME);
+    if (route.name !== 'home' && !inChallenge && !inResults) replaceRoute(HOME);
   }, [route.name, inChallenge, inResults]);
 
   const title = inChallenge
@@ -53,17 +62,12 @@ export function App({ bank, storage }: AppProps) {
     document.title = title;
   }, [title]);
 
-  const start = (mode: ChallengeMode, questions: readonly Question[], filters?: ChallengeFilters) => {
+  const start = (mode: ChallengeMode, questions: readonly Question[]) => {
     const now = Date.now();
-    const session = createSession({
-      mode,
-      questions,
-      now,
-      rng: Math.random,
-      ...(filters ? { filters } : {}),
-    });
+    const session = createSession({ mode, questions, now, rng: Math.random });
     if (!session) return;
-    void requestPersistentStorage();
+    // Algunos navegadores lo preguntan al usuario, así que solo se pide con el primer reto.
+    if (progress.sessions.length === 0) void requestPersistentStorage();
     update((current) => startSession(current, session, now));
     navigate(CHALLENGE);
   };
@@ -77,11 +81,17 @@ export function App({ bank, storage }: AppProps) {
         key={`${active.id}-${active.currentIndex}`}
         session={active}
         question={activeQuestion}
+        saveFailed={saveFailed}
+        shortcutsEnabled={shortcutsEnabled}
+        onToggleShortcuts={(enabled) => {
+          setShortcutsEnabled(enabled);
+          saveShortcutsEnabled(storage, enabled);
+        }}
         onAnswer={(optionId) => update((current) => answerCurrent(current, activeQuestion, optionId, Date.now()))}
         onNext={() => {
           const isLast = active.currentIndex >= active.questions.length - 1;
           update((current) => advance(current, Date.now()));
-          if (isLast) navigate(resultsHash(active.id));
+          if (isLast) replaceRoute(resultsHash(active.id));
         }}
         onExit={() => navigate(HOME)}
       />
@@ -95,6 +105,7 @@ export function App({ bank, storage }: AppProps) {
         session={finished}
         questionsById={questionsById}
         failedCount={failedQuestions(progress.sessions, bank).length}
+        saveFailed={saveFailed}
         onReview={startReview}
         onHome={() => navigate(HOME)}
       />
@@ -109,9 +120,7 @@ export function App({ bank, storage }: AppProps) {
       status={status}
       saveFailed={saveFailed}
       onStartMixed={() => start('mixed', selectMixed(bank, progress.sessions, Math.random))}
-      onStartFiltered={(filters) =>
-        start('filtered', selectFiltered(bank, filters, progress.sessions, Math.random), filters)
-      }
+      onStartFiltered={(filters) => start('filtered', selectFiltered(bank, filters, progress.sessions, Math.random))}
       onStartReview={startReview}
       onResume={() => navigate(CHALLENGE)}
       onDiscard={() => update((current) => discardActive(current, Date.now()))}

@@ -22,6 +22,17 @@ export interface RunResult {
   status: number | null;
 }
 
+/** Variables mínimas para arrancar los intérpretes: los fragmentos no deben ver ningún token de CI. */
+const SNIPPET_VARIABLES = ['PATH', 'Path', 'SYSTEMROOT', 'SystemRoot', 'TEMP', 'TMP', 'TMPDIR', 'LD_LIBRARY_PATH'];
+
+function snippetEnvironment(): NodeJS.ProcessEnv {
+  const env: NodeJS.ProcessEnv = { PYTHONIOENCODING: 'utf-8' };
+  for (const name of SNIPPET_VARIABLES) {
+    if (process.env[name] !== undefined) env[name] = process.env[name];
+  }
+  return env;
+}
+
 export function runSnippet(language: Language, code: string): RunResult {
   const runner = RUNNERS[language];
   const directory = mkdtempSync(join(tmpdir(), 'devquiz-'));
@@ -34,7 +45,7 @@ export function runSnippet(language: Language, code: string): RunResult {
       cwd: directory,
       encoding: 'utf8',
       timeout: TIMEOUT_MS,
-      env: { ...process.env, PYTHONIOENCODING: 'utf-8' },
+      env: snippetEnvironment(),
     });
 
     if (result.error) {
@@ -68,7 +79,9 @@ export function verifyQuestion(question: Question): string | null {
   if (result.status === 0) {
     return `se esperaba un error "${correctText}", pero el fragmento terminó bien`;
   }
-  return result.stderr.includes(correctText.trim())
+  // El tipo de error debe abrir una línea: mencionarlo en un mensaje no basta.
+  const errorName = correctText.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`^${errorName}(:|\\s*$)`, 'm').test(result.stderr.replace(/\r\n/g, '\n'))
     ? null
     : `se esperaba un error "${correctText}", pero se obtuvo: ${normalize(result.stderr)}`;
 }

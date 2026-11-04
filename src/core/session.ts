@@ -1,7 +1,6 @@
 import { shuffle } from './selection.ts';
 import type {
   Bank,
-  ChallengeFilters,
   ChallengeMode,
   Progress,
   Question,
@@ -12,20 +11,18 @@ import type {
 
 export interface NewSession {
   mode: ChallengeMode;
-  filters?: ChallengeFilters;
   questions: readonly Question[];
   now: number;
   rng: Rng;
 }
 
 /** Crea un reto con las opciones barajadas. Devuelve null si no hay preguntas. */
-export function createSession({ mode, filters, questions, now, rng }: NewSession): Session | null {
+export function createSession({ mode, questions, now, rng }: NewSession): Session | null {
   if (questions.length === 0) return null;
 
   return {
     id: `${now.toString(36)}-${Math.floor(rng() * 1e9).toString(36)}`,
     mode,
-    ...(filters ? { filters } : {}),
     status: 'active',
     startedAt: now,
     currentIndex: 0,
@@ -120,7 +117,7 @@ export function reconcileActive(progress: Progress, bank: Bank, now: number): Pr
       if (!question) return [];
 
       const ids = question.options.map((option) => option.id);
-      const kept = item.optionOrder.filter((id) => ids.includes(id));
+      const kept = [...new Set(item.optionOrder)].filter((id) => ids.includes(id));
       const added = ids.filter((id) => !kept.includes(id));
       return [{ ...item, optionOrder: [...kept, ...added] }];
     });
