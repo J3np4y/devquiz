@@ -1,22 +1,55 @@
 :root {
   color-scheme: light dark;
-  --bg: #f7f8fa;
-  --text: #16181d;
-  --muted: #565d6b;
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --text: #15181e;
+  --muted: #555d6b;
+  --border: #d5d9e0;
+  --accent: #1f4fd8;
+  --accent-text: #ffffff;
+  --accent-soft: #e8eefd;
+  --correct: #116b3a;
+  --correct-soft: #e4f5ea;
+  --wrong: #b3261e;
+  --wrong-soft: #fcebe9;
+  --code-bg: #f1f3f6;
+  --radius: 10px;
+  --mono: ui-monospace, 'Cascadia Code', 'SF Mono', Menlo, Consolas, monospace;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.5;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #14161a;
+    --bg: #12141a;
+    --surface: #1b1e26;
     --text: #eceef2;
-    --muted: #a3aab8;
+    --muted: #a6adba;
+    --border: #363b47;
+    --accent: #8fb0ff;
+    --accent-text: #0e1320;
+    --accent-soft: #1f2a47;
+    --correct: #6fdc9b;
+    --correct-soft: #15301f;
+    --wrong: #ff9d94;
+    --wrong-soft: #3a1a18;
+    --code-bg: #14161c;
   }
 }
 
 * {
   box-sizing: border-box;
+}
+
+html {
+  scrollbar-gutter: stable;
+}
+
+/* Las ligaduras mostrarían != como ≠: el código debe verse tal como se escribe. */
+code,
+pre,
+.mono {
+  font-variant-ligatures: none;
 }
 
 body {
@@ -25,12 +58,519 @@ body {
   color: var(--text);
 }
 
-.app {
-  max-width: 40rem;
-  margin: 0 auto;
-  padding: 2rem 1rem;
+h1,
+h2,
+h3,
+p {
+  margin: 0;
 }
 
-.app__status {
+h1:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+code {
+  padding: 0.1em 0.3em;
+  border-radius: 4px;
+  background: var(--code-bg);
+  font-family: var(--mono);
+  font-size: 0.92em;
+}
+
+.mono {
+  font-family: var(--mono);
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}
+
+.masthead h1 {
+  font-size: 2rem;
+  line-height: 1.2;
+}
+
+.masthead p {
   color: var(--muted);
+}
+
+.eyebrow {
+  font-size: 0.85rem;
+}
+
+.section-title {
+  margin-top: 0.5rem;
+  font-size: 1.15rem;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.card h2 {
+  font-size: 1.1rem;
+}
+
+.card--accent {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.notice {
+  padding: 0.75rem 1rem;
+  border-left: 4px solid var(--wrong);
+  border-radius: 4px;
+  background: var(--wrong-soft);
+}
+
+.help {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.footer {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* Botones */
+
+.button {
+  min-height: 44px;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.button:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.button:disabled {
+  border-style: dashed;
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+.button--primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+.button--danger {
+  border-color: var(--wrong);
+  color: var(--wrong);
+}
+
+.button--quiet {
+  border-color: transparent;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.button--wide {
+  width: 100%;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* Inicio */
+
+.filters {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.filters select {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-weight: 400;
+}
+
+.filters .help,
+.filters .button {
+  grid-column: 1 / -1;
+}
+
+.filters .button {
+  justify-self: start;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  width: 100%;
+  margin: 0;
+}
+
+.stats dt {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.stats dd {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.topic-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.topic-table caption {
+  padding-bottom: 0.25rem;
+  font-weight: 600;
+  text-align: left;
+}
+
+.topic-table th,
+.topic-table td {
+  padding: 0.35rem 0.5rem 0.35rem 0;
+  border-top: 1px solid var(--border);
+  text-align: left;
+}
+
+.topic-table thead th {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.topic-table tbody th {
+  font-weight: 400;
+}
+
+.topic-table td,
+.topic-table thead th:not(:first-child) {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.topic-table td {
+  font-family: var(--mono);
+}
+
+.confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Reto */
+
+.quiz-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.quiz-progress {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+  padding-top: 0.5rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.quiz-progress progress {
+  width: 100%;
+  height: 6px;
+  accent-color: var(--accent);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.tags span {
+  padding: 0.1rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+.prompt {
+  font-size: 1.3rem;
+  line-height: 1.35;
+}
+
+.prompt:focus {
+  outline: none;
+}
+
+.code {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* El código no se ajusta: en Python la indentación importa, así que se desplaza. */
+.code pre {
+  overflow-x: auto;
+  margin: 0;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--code-bg) !important;
+  font-family: var(--mono);
+  font-size: 0.88rem;
+  line-height: 1.55;
+  white-space: pre;
+}
+
+.code code {
+  padding: 0;
+  background: none;
+  font-size: inherit;
+}
+
+.code span {
+  color: var(--shiki-light);
+}
+
+@media (prefers-color-scheme: dark) {
+  .code span {
+    color: var(--shiki-dark);
+  }
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: 48px;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.option:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.option:disabled {
+  cursor: default;
+}
+
+.option-key {
+  flex: none;
+  width: 1.6rem;
+  height: 1.6rem;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.5rem;
+  text-align: center;
+}
+
+.option-text {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+.option-mark {
+  flex: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.option--correct {
+  border: 2px solid var(--correct);
+  background: var(--correct-soft);
+}
+
+.option--correct .option-mark {
+  color: var(--correct);
+}
+
+.option--wrong {
+  border: 2px solid var(--wrong);
+  background: var(--wrong-soft);
+}
+
+.option--wrong .option-mark {
+  color: var(--wrong);
+}
+
+.option--muted .option-text {
+  color: var(--muted);
+}
+
+.feedback {
+  padding: 0.9rem 1rem;
+  border-left: 4px solid;
+  border-radius: 4px;
+}
+
+.feedback--correct {
+  border-color: var(--correct);
+  background: var(--correct-soft);
+}
+
+.feedback--wrong {
+  border-color: var(--wrong);
+  background: var(--wrong-soft);
+}
+
+.feedback-title {
+  margin-bottom: 0.25rem;
+  font-weight: 700;
+}
+
+/* Sin teclado físico, la pista de las teclas no aporta nada. */
+@media (hover: none) {
+  .keyboard-hint {
+    display: none;
+  }
+}
+
+/* Resultados */
+
+.review {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.review-item {
+  align-items: stretch;
+  border-left-width: 4px;
+}
+
+.review-item h3 {
+  font-size: 1.05rem;
+}
+
+.review-item--correct {
+  border-left-color: var(--correct);
+}
+
+.review-item--wrong {
+  border-left-color: var(--wrong);
+}
+
+.review-result {
+  font-weight: 700;
+}
+
+.review-item--correct .review-result {
+  color: var(--correct);
+}
+
+.review-item--wrong .review-result {
+  color: var(--wrong);
+}
+
+.review-answers {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.review-answers dt {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.review-answers dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+@media (max-width: 30rem) {
+  .filters {
+    grid-template-columns: 1fr;
+  }
+
+  .stats dd {
+    font-size: 1.25rem;
+  }
+
+  .option {
+    flex-wrap: wrap;
+  }
+
+  .option-mark {
+    width: 100%;
+    padding-left: 2.35rem;
+  }
 }
