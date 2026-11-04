@@ -1,6 +1,8 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import bank from 'virtual:bank';
 import { App } from './App';
+import { browserStorage } from './core/storage.ts';
 import './styles.css';
 
 const root = document.getElementById('root');
@@ -10,6 +12,6 @@ if (!root) {
 
 createRoot(root).render(
   <StrictMode>
-    <App />
+    <App bank={bank} storage={browserStorage()} />
   </StrictMode>,
 );
