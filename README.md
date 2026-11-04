@@ -22,6 +22,12 @@ Antes de subir cambios, ejecuta lint, tipos, tests y build:
 npm run check
 ```
 
+Las pruebas E2E se ejecutan contra la compilación de producción, en escritorio y móvil, e incluyen axe. La primera vez hay que instalar el navegador con `npx playwright install chromium`:
+
+```bash
+npm run test:e2e
+```
+
 El despliegue a GitHub Pages es automático al subir a `main`.
 
 ## Preguntas

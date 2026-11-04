@@ -43,6 +43,16 @@ export function App({ bank, storage }: AppProps) {
     if (route.name !== 'home' && !inChallenge && !inResults) navigate(HOME);
   }, [route.name, inChallenge, inResults]);
 
+  const title = inChallenge
+    ? `Pregunta ${active.currentIndex + 1} de ${active.questions.length} · DevQuiz`
+    : inResults
+      ? 'Resultados · DevQuiz'
+      : 'DevQuiz';
+
+  useEffect(() => {
+    document.title = title;
+  }, [title]);
+
   const start = (mode: ChallengeMode, questions: readonly Question[], filters?: ChallengeFilters) => {
     const now = Date.now();
     const session = createSession({
