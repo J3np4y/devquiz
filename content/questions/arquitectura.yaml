@@ -1,0 +1,116 @@
+- id: arq-capas-001
+  topic: arquitectura
+  difficulty: principiante
+  type: concept
+  prompt: "¿Qué objetivo tiene organizar una aplicación en capas?"
+  options:
+    - { id: a, text: "Separar responsabilidades como la interfaz, el negocio y los datos" }
+    - { id: b, text: "Conseguir que cada capa se ejecute en un servidor distinto" }
+    - { id: c, text: "Permitir que cada capa use un lenguaje de programación diferente" }
+    - { id: d, text: "Eliminar la necesidad de una base de datos" }
+  correct: a
+  explanation: "Cada capa tiene una responsabilidad clara y se comunica con las contiguas, lo que facilita entender y cambiar cada parte. Las capas pueden convivir en un mismo proceso."
+
+- id: arq-http-001
+  topic: arquitectura
+  difficulty: principiante
+  type: concept
+  prompt: "En una API REST, ¿qué método HTTP se usa para consultar un recurso sin modificarlo?"
+  options:
+    - { id: a, text: "POST" }
+    - { id: b, text: "GET" }
+    - { id: c, text: "PUT" }
+    - { id: d, text: "PATCH" }
+  correct: b
+  explanation: "GET es un método seguro: solo lee y no debe cambiar el estado del servidor. POST, PUT y PATCH se usan para crear o modificar recursos."
+
+- id: arq-monolito-001
+  topic: arquitectura
+  difficulty: principiante
+  type: concept
+  prompt: "¿Qué caracteriza a una aplicación monolítica?"
+  options:
+    - { id: a, text: "Está escrita en un único archivo de código" }
+    - { id: b, text: "Se despliega como una sola unidad" }
+    - { id: c, text: "No puede organizarse en módulos internos" }
+    - { id: d, text: "Solo admite un usuario simultáneo" }
+  correct: b
+  explanation: "Un monolito empaqueta toda la funcionalidad en una unidad desplegable. Puede estar bien organizado en módulos; lo contrario son servicios desplegados por separado."
+
+- id: arq-cache-001
+  topic: arquitectura
+  difficulty: intermedio
+  type: concept
+  prompt: "¿Cuál es el principal riesgo de añadir una caché?"
+  options:
+    - { id: a, text: "Que aumente siempre la carga de la base de datos" }
+    - { id: b, text: "Que se sirvan datos desactualizados" }
+    - { id: c, text: "Que las lecturas pasen a ser más lentas" }
+    - { id: d, text: "Que se pierdan los datos de la fuente original" }
+  correct: b
+  explanation: "La copia en caché puede quedarse atrás respecto a la fuente original. Por eso hace falta una estrategia de invalidación, como un tiempo de expiración o borrar la entrada al escribir."
+
+- id: arq-idempotencia-001
+  topic: arquitectura
+  difficulty: intermedio
+  type: concept
+  prompt: "¿Por qué es importante que una operación sea idempotente?"
+  options:
+    - { id: a, text: "Porque así se puede reintentar sin provocar efectos adicionales" }
+    - { id: b, text: "Porque así responde siempre en el mismo tiempo" }
+    - { id: c, text: "Porque así no necesita autenticación" }
+    - { id: d, text: "Porque así sus respuestas se pueden comprimir" }
+  correct: a
+  explanation: "En red, un cliente puede no saber si su petición llegó y reintentarla. Si la operación es idempotente, ejecutarla varias veces deja el mismo estado que ejecutarla una, y no se duplica, por ejemplo, un cobro."
+
+- id: arq-cola-001
+  topic: arquitectura
+  difficulty: intermedio
+  type: concept
+  prompt: "¿Qué aporta una cola de mensajes entre dos servicios?"
+  options:
+    - { id: a, text: "Garantiza que el mensaje se procese en el mismo instante" }
+    - { id: b, text: "Permite que el emisor siga funcionando aunque el receptor esté ocupado o caído" }
+    - { id: c, text: "Elimina la necesidad de gestionar errores en el receptor" }
+    - { id: d, text: "Obliga a que ambos servicios usen la misma base de datos" }
+  correct: b
+  explanation: "La cola desacopla a ambos en el tiempo: el emisor deja el mensaje y continúa, y el receptor lo procesa cuando puede. También ayuda a absorber picos de carga."
+
+- id: arq-cap-001
+  topic: arquitectura
+  difficulty: avanzado
+  type: concept
+  prompt: "Según el teorema CAP, ¿qué disyuntiva afronta un sistema distribuido durante una partición de red?"
+  options:
+    - { id: a, text: "Entre consistencia y disponibilidad" }
+    - { id: b, text: "Entre latencia y coste" }
+    - { id: c, text: "Entre seguridad y rendimiento" }
+    - { id: d, text: "Entre lectura y escritura" }
+  correct: a
+  explanation: "Si los nodos no pueden comunicarse, el sistema debe elegir: rechazar peticiones para no dar datos incoherentes, o responder aunque los datos puedan estar desactualizados."
+
+- id: arq-eventos-001
+  topic: arquitectura
+  difficulty: avanzado
+  type: concept
+  prompt: "¿Qué se almacena como fuente de verdad con event sourcing?"
+  options:
+    - { id: a, text: "Solo el estado actual de cada entidad" }
+    - { id: b, text: "La secuencia de eventos que ha ocurrido" }
+    - { id: c, text: "Una copia diaria de toda la base de datos" }
+    - { id: d, text: "Los registros de texto de la aplicación" }
+  correct: b
+  explanation: "El estado no se guarda directamente, sino que se reconstruye reproduciendo los eventos, que solo se añaden. Esto da un historial completo, a cambio de más complejidad; para acelerar la reconstrucción se usan instantáneas."
+
+- id: arq-breaker-001
+  topic: arquitectura
+  difficulty: avanzado
+  type: concept
+  prompt: "¿Qué hace un circuit breaker cuando un servicio remoto falla repetidamente?"
+  options:
+    - { id: a, text: "Reintenta las llamadas sin pausa hasta que el servicio responda" }
+    - { id: b, text: "Deja de llamarlo durante un tiempo y falla de inmediato" }
+    - { id: c, text: "Reinicia automáticamente el servicio remoto" }
+    - { id: d, text: "Guarda las llamadas y las reenvía todas juntas" }
+  correct: b
+  explanation: "Evita malgastar recursos esperando respuestas que no llegarán y da margen al servicio para recuperarse. Pasado un tiempo, deja pasar algunas llamadas de prueba para ver si ya funciona."

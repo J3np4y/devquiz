@@ -12,7 +12,7 @@ Aplicación web adaptable a móvil para que desarrolladores repasen conocimiento
 - **Uso:** individual, sin cuentas.
 - **Persistencia:** guardar el progreso localmente en el dispositivo.
 - **Contenido inicial:** banco de preguntas preparado y revisado, sin generación mediante IA dentro de la aplicación.
-- **Autoría del banco:** Claude redacta las preguntas como borrador y Oscar las revisa antes de publicarlas.
+- **Autoría del banco:** Claude redacta y revisa las preguntas, sin revisión humana previa a su publicación. CI verifica el formato de todas y el resultado de las que ejecutan código.
 - **Tamaño del reto:** hasta 10 preguntas, unos 5 minutos.
 - **Banco inicial:** unas 150 preguntas (7 temas × 3 niveles × 7 preguntas).
 - **Formato de respuesta:** opción múltiple con una única respuesta correcta. El esquema debe poder ampliarse a otros formatos.

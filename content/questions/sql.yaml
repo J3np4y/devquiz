@@ -1,0 +1,169 @@
+- id: sql-where-001
+  topic: sql
+  difficulty: principiante
+  type: code
+  language: sql
+  prompt: "¿Qué devuelve la consulta?"
+  code: |
+    CREATE TABLE users (name TEXT, age INTEGER);
+    INSERT INTO users VALUES ('Eva', 25), ('Luis', 17), ('Ana', 30);
+
+    SELECT name FROM users WHERE age >= 18 ORDER BY name;
+  options:
+    - { id: a, text: "Eva\nAna" }
+    - { id: b, text: "Ana\nEva" }
+    - { id: c, text: "Ana\nEva\nLuis" }
+    - { id: d, text: "Ana" }
+  correct: b
+  explanation: "`WHERE` descarta a Luis por tener menos de 18, y `ORDER BY name` ordena el resto alfabéticamente."
+  verify: output
+
+- id: sql-limit-001
+  topic: sql
+  difficulty: principiante
+  type: code
+  language: sql
+  prompt: "¿Qué devuelve la consulta?"
+  code: |
+    CREATE TABLE products (name TEXT, price INTEGER);
+    INSERT INTO products VALUES ('Lápiz', 1), ('Libro', 15), ('Mochila', 30);
+
+    SELECT name FROM products ORDER BY price DESC LIMIT 1;
+  options:
+    - { id: a, text: "Lápiz" }
+    - { id: b, text: "Libro" }
+    - { id: c, text: "Mochila" }
+    - { id: d, text: "30" }
+  correct: c
+  explanation: "`ORDER BY price DESC` coloca primero el precio más alto y `LIMIT 1` se queda solo con esa fila. Únicamente se selecciona la columna `name`."
+  verify: output
+
+- id: sql-clave-001
+  topic: sql
+  difficulty: principiante
+  type: concept
+  prompt: "¿Para qué sirve una clave primaria?"
+  options:
+    - { id: a, text: "Para identificar de forma única cada fila de la tabla" }
+    - { id: b, text: "Para enlazar la tabla con una fila de otra tabla" }
+    - { id: c, text: "Para impedir que se borren filas de la tabla" }
+    - { id: d, text: "Para ordenar los resultados de cualquier consulta" }
+  correct: a
+  explanation: "La clave primaria identifica cada fila, de modo que sus valores no pueden repetirse. El enlace con otra tabla lo hace una clave foránea."
+
+- id: sql-count-001
+  topic: sql
+  difficulty: intermedio
+  type: code
+  language: sql
+  prompt: "¿Qué devuelve la consulta?"
+  code: |
+    CREATE TABLE scores (value INTEGER);
+    INSERT INTO scores VALUES (10), (NULL), (30);
+
+    SELECT COUNT(*), COUNT(value) FROM scores;
+  options:
+    - { id: a, text: "3|3" }
+    - { id: b, text: "2|2" }
+    - { id: c, text: "3|2" }
+    - { id: d, text: "2|3" }
+  correct: c
+  explanation: "`COUNT(*)` cuenta todas las filas, mientras que `COUNT(columna)` ignora las que tienen NULL en esa columna."
+  verify: output
+
+- id: sql-join-001
+  topic: sql
+  difficulty: intermedio
+  type: code
+  language: sql
+  prompt: "¿Qué devuelve la consulta?"
+  code: |
+    CREATE TABLE users (id INTEGER, name TEXT);
+    CREATE TABLE orders (user_id INTEGER);
+    INSERT INTO users VALUES (1, 'Ana'), (2, 'Luis');
+    INSERT INTO orders VALUES (1), (1);
+
+    SELECT u.name, COUNT(o.user_id)
+    FROM users u
+    LEFT JOIN orders o ON o.user_id = u.id
+    GROUP BY u.id
+    ORDER BY u.id;
+  options:
+    - { id: a, text: "Ana|2" }
+    - { id: b, text: "Ana|2\nLuis|0" }
+    - { id: c, text: "Ana|2\nLuis|1" }
+    - { id: d, text: "Ana|1\nLuis|0" }
+  correct: b
+  explanation: "`LEFT JOIN` conserva a Luis aunque no tenga pedidos, con NULL en las columnas de `orders`. `COUNT(o.user_id)` ignora ese NULL y da 0."
+  verify: output
+
+- id: sql-having-001
+  topic: sql
+  difficulty: intermedio
+  type: concept
+  prompt: "¿Qué diferencia hay entre `WHERE` y `HAVING`?"
+  options:
+    - { id: a, text: "`WHERE` filtra filas antes de agrupar y `HAVING` filtra grupos después" }
+    - { id: b, text: "`HAVING` filtra filas antes de agrupar y `WHERE` filtra grupos después" }
+    - { id: c, text: "`WHERE` solo admite números y `HAVING` admite cualquier tipo de dato" }
+    - { id: d, text: "Son equivalentes, pero `HAVING` obliga a usar un índice de la tabla" }
+  correct: a
+  explanation: "`WHERE` actúa sobre las filas antes de `GROUP BY`, así que no puede usar agregados. `HAVING` actúa sobre los grupos ya formados, por ejemplo con `HAVING COUNT(*) > 1`."
+
+- id: sql-ventana-001
+  topic: sql
+  difficulty: avanzado
+  type: code
+  language: sql
+  prompt: "¿Qué devuelve la consulta?"
+  code: |
+    CREATE TABLE sales (seller TEXT, amount INTEGER);
+    INSERT INTO sales VALUES ('Ana', 10), ('Ana', 30), ('Luis', 20);
+
+    SELECT seller, amount,
+           RANK() OVER (PARTITION BY seller ORDER BY amount DESC)
+    FROM sales
+    ORDER BY seller, amount;
+  options:
+    - { id: a, text: "Ana|10|2\nAna|30|1\nLuis|20|1" }
+    - { id: b, text: "Ana|10|1\nAna|30|2\nLuis|20|1" }
+    - { id: c, text: "Ana|10|3\nAna|30|1\nLuis|20|2" }
+    - { id: d, text: "Ana|40|1\nLuis|20|2" }
+  correct: a
+  explanation: "`PARTITION BY` calcula el ranking por separado para cada vendedor, y `ORDER BY amount DESC` da el puesto 1 al importe mayor. Una función de ventana no agrupa filas: las conserva todas."
+  verify: output
+
+- id: sql-notin-001
+  topic: sql
+  difficulty: avanzado
+  type: code
+  language: sql
+  prompt: "¿Qué devuelve la consulta?"
+  code: |
+    CREATE TABLE a (x INTEGER);
+    CREATE TABLE b (y INTEGER);
+    INSERT INTO a VALUES (1), (2);
+    INSERT INTO b VALUES (2), (NULL);
+
+    SELECT COUNT(*) FROM a WHERE x NOT IN (SELECT y FROM b);
+  options:
+    - { id: a, text: "0" }
+    - { id: b, text: "1" }
+    - { id: c, text: "2" }
+    - { id: d, text: "NULL" }
+  correct: a
+  explanation: "x = 2 se descarta porque está en la subconsulta. Con x = 1 hay que compararlo también con NULL, lo que da un resultado desconocido, y `WHERE` descarta la fila. `NOT EXISTS` evita este problema."
+  verify: output
+
+- id: sql-indice-001
+  topic: sql
+  difficulty: avanzado
+  type: concept
+  prompt: "Con un índice compuesto sobre `(a, b)`, ¿qué filtro no puede, por lo general, usarlo para localizar las filas directamente?"
+  options:
+    - { id: a, text: "`WHERE a = 1`" }
+    - { id: b, text: "`WHERE a = 1 AND b = 2`" }
+    - { id: c, text: "`WHERE b = 2`" }
+    - { id: d, text: "`WHERE a = 1 AND b > 2`" }
+  correct: c
+  explanation: "El índice se ordena primero por `a` y después por `b`, así que las búsquedas deben partir de sus columnas iniciales. Algunos motores pueden aprovecharlo con técnicas como el salto de índice, pero suele ser menos eficiente."
