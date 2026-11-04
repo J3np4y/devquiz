@@ -41,7 +41,7 @@
   prompt: "¿Qué caracteriza a un test unitario frente a uno de integración?"
   options:
     - { id: a, text: "Prueba una pequeña unidad de código de forma aislada" }
-    - { id: b, text: "Prueba varios componentes reales trabajando juntos" }
+    - { id: b, text: "Prueba varios componentes reales trabajando juntos, con sus dependencias reales" }
     - { id: c, text: "Se ejecuta solo en el entorno de producción" }
     - { id: d, text: "Lo escribe un equipo distinto al de desarrollo" }
   correct: a
@@ -155,3 +155,218 @@
     - { id: d, text: "Un test de contrato" }
   correct: a
   explanation: "En lugar de ejemplos concretos, define una regla que debe cumplirse siempre, y la herramienta genera muchas entradas para intentar incumplirla."
+
+- id: test-regresion-001
+  topic: testing
+  difficulty: principiante
+  type: concept
+  prompt: "¿Para qué sirve un test de regresión?"
+  options:
+    - { id: a, text: "Para medir el rendimiento bajo carga" }
+    - { id: b, text: "Para comprobar que lo que ya funcionaba sigue funcionando" }
+    - { id: c, text: "Para revisar el estilo del código" }
+    - { id: d, text: "Para validar una función aún sin implementar" }
+  correct: b
+  explanation: "Evita que un cambio rompa algo que ya funcionaba. Es habitual añadir uno al corregir un error, para que no vuelva a aparecer."
+
+- id: test-tdd-001
+  topic: testing
+  difficulty: principiante
+  type: concept
+  prompt: "¿Por dónde se empieza en el desarrollo guiado por tests (TDD)?"
+  options:
+    - { id: a, text: "Por un test que falla" }
+    - { id: b, text: "Por el código de producción" }
+    - { id: c, text: "Por la refactorización" }
+    - { id: d, text: "Por el despliegue" }
+  correct: a
+  explanation: "El ciclo de TDD consiste en escribir un test que falla, añadir el código mínimo para que pase y, después, refactorizar con los tests como red de seguridad."
+
+- id: test-limites-001
+  topic: testing
+  difficulty: principiante
+  type: code
+  language: python
+  prompt: "Si se puede votar a partir de los 18 años, ¿qué edad revela el error de esta función en un test?"
+  code: |
+    def can_vote(age):
+        return age > 18
+  options:
+    - { id: a, text: "10" }
+    - { id: b, text: "17" }
+    - { id: c, text: "18" }
+    - { id: d, text: "30" }
+  correct: c
+  explanation: "La función debería usar `>=`, y solo el valor del límite lo revela: con 17, con 10 y con 30 el resultado es correcto. Por eso conviene probar los valores frontera."
+
+- id: test-cobertura-001
+  topic: testing
+  difficulty: principiante
+  type: concept
+  prompt: "¿Qué garantiza una cobertura de código del 100 %?"
+  options:
+    - { id: a, text: "Que el programa no tiene errores" }
+    - { id: b, text: "Que todos los casos de uso están probados" }
+    - { id: c, text: "Que las comprobaciones de los tests son correctas" }
+    - { id: d, text: "Que todas las líneas se ejecutaron durante los tests" }
+  correct: d
+  explanation: "La cobertura solo indica qué código se ejecutó, no si se comprobó bien su resultado. Un test sin comprobaciones también suma cobertura."
+
+- id: test-sideeffect-001
+  topic: testing
+  difficulty: intermedio
+  type: code
+  language: python
+  prompt: "¿Qué imprime este código?"
+  code: |
+    from unittest.mock import Mock
+
+    fetch = Mock(side_effect=[1, ValueError("fallo"), 3])
+
+    print(fetch())
+    try:
+        fetch()
+    except ValueError as error:
+        print(error)
+    print(fetch())
+  options:
+    - { id: a, text: "1\n1\n1" }
+    - { id: b, text: "1\nfallo" }
+    - { id: c, text: "1\nfallo\n3" }
+    - { id: d, text: "1\nNone\n3" }
+  correct: c
+  explanation: "Con una lista en `side_effect`, cada llamada usa el siguiente elemento, y las excepciones se lanzan en lugar de devolverse. Es útil para probar reintentos."
+  verify: output
+
+- id: test-setup-001
+  topic: testing
+  difficulty: intermedio
+  type: code
+  language: python
+  prompt: "¿Qué imprime este código?"
+  code: |
+    import unittest
+
+    log = []
+
+    class Example(unittest.TestCase):
+        def setUp(self):
+            log.append("setUp")
+
+        def test_a(self):
+            log.append("a")
+
+        def test_b(self):
+            log.append("b")
+
+    suite = unittest.defaultTestLoader.loadTestsFromTestCase(Example)
+    suite.run(unittest.TestResult())
+    print(",".join(log))
+  options:
+    - { id: a, text: "setUp,a,b" }
+    - { id: b, text: "setUp,a,setUp,b" }
+    - { id: c, text: "a,b,setUp" }
+    - { id: d, text: "a,setUp,b,setUp" }
+  correct: b
+  explanation: "`setUp` se ejecuta antes de cada test, para que todos partan de un estado limpio. Para preparar algo una sola vez por clase existe `setUpClass`."
+  verify: output
+
+- id: test-orden-001
+  topic: testing
+  difficulty: intermedio
+  type: concept
+  prompt: "¿Por qué un test no debería depender de que otro se ejecute antes?"
+  options:
+    - { id: a, text: "Porque la ejecución de toda la suite sería bastante más lenta en cualquier entorno de integración" }
+    - { id: b, text: "Porque su resultado variaría con el orden y costaría diagnosticar los fallos" }
+    - { id: c, text: "Porque los frameworks de testing lo prohíben" }
+    - { id: d, text: "Porque la cobertura de código dejaría de medirse" }
+  correct: b
+  explanation: "Con tests acoplados, un fallo puede aparecer lejos de su causa y no se pueden ejecutar por separado ni en paralelo. Cada test debe preparar su propio estado."
+
+- id: test-piramide-001
+  topic: testing
+  difficulty: intermedio
+  type: concept
+  prompt: "¿Por qué la pirámide de tests propone más tests unitarios que tests de extremo a extremo?"
+  options:
+    - { id: a, text: "Porque los de extremo a extremo no detectan errores reales" }
+    - { id: b, text: "Porque son más rápidos, estables y localizan mejor los fallos" }
+    - { id: c, text: "Porque los unitarios cubren también la interfaz de usuario y el despliegue en producción" }
+    - { id: d, text: "Porque los unitarios no necesitan mantenimiento" }
+  correct: b
+  explanation: "Los tests de extremo a extremo aportan mucha confianza, pero son lentos, más frágiles y costosos. Por eso suele haber pocos, centrados en los flujos críticos."
+
+- id: test-llamada-001
+  topic: testing
+  difficulty: avanzado
+  type: code
+  language: python
+  prompt: "¿Qué error produce este código?"
+  code: |
+    from unittest.mock import Mock
+
+    send = Mock()
+    send("a")
+    send.assert_called_once_with("b")
+  options:
+    - { id: a, text: "TypeError" }
+    - { id: b, text: "ValueError" }
+    - { id: c, text: "AttributeError" }
+    - { id: d, text: "AssertionError" }
+  correct: d
+  explanation: "El mock registra que se le llamó con \"a\", y la comprobación esperaba \"b\". Por eso `assert_called_once_with` lanza `AssertionError`, que hace fallar el test."
+  verify: error
+
+- id: test-spec-001
+  topic: testing
+  difficulty: avanzado
+  type: code
+  language: python
+  prompt: "¿Qué error produce la última línea?"
+  code: |
+    from unittest.mock import Mock
+
+    class Api:
+        def get(self):
+            return 1
+
+    loose = Mock()
+    loose.gett()
+
+    strict = Mock(spec=Api)
+    strict.gett()
+  options:
+    - { id: a, text: "AttributeError" }
+    - { id: b, text: "TypeError" }
+    - { id: c, text: "NameError" }
+    - { id: d, text: "AssertionError" }
+  correct: a
+  explanation: "Un `Mock` normal acepta cualquier atributo, así que oculta erratas como `gett`. Con `spec`, solo admite los atributos de la clase indicada, y el test detecta el error."
+  verify: error
+
+- id: test-contrato-001
+  topic: testing
+  difficulty: avanzado
+  type: concept
+  prompt: "¿Qué problema resuelven los tests de contrato entre servicios?"
+  options:
+    - { id: a, text: "Comprueban el rendimiento de cada servicio cuando recibe una carga alta de peticiones simultáneas" }
+    - { id: b, text: "Sustituyen a todos los tests unitarios de cada servicio" }
+    - { id: c, text: "Detectan incompatibilidades sin desplegar juntos todos los servicios" }
+    - { id: d, text: "Verifican los términos legales de las APIs de terceros" }
+  correct: c
+  explanation: "Comprueban por separado que el consumidor y el proveedor respetan un mismo acuerdo sobre peticiones y respuestas. Así se evita gran parte del coste de un entorno integrado."
+
+- id: test-instantanea-001
+  topic: testing
+  difficulty: avanzado
+  type: concept
+  prompt: "¿Cuál es el principal riesgo de los tests de instantánea?"
+  options:
+    - { id: a, text: "Que no se pueden ejecutar en un sistema de integración continua" }
+    - { id: b, text: "Que se acepten los cambios sin revisar si son correctos" }
+    - { id: c, text: "Que solo sirven para probar código de interfaz de usuario" }
+    - { id: d, text: "Que no detectan ningún cambio en la salida del programa" }
+  correct: b
+  explanation: "Al fallar, actualizar la instantánea es muy fácil, y puede convertirse en un gesto automático. Además, si es muy grande, nadie la revisa con atención y un error puede darse por bueno."

@@ -165,3 +165,228 @@
     - { id: d, text: "Admite cualquier valor primitivo como clave" }
   correct: b
   explanation: "`WeakMap` guarda referencias débiles a sus claves: si un objeto ya no se usa en otro sitio, puede liberarse junto con su entrada. A cambio, no se puede recorrer."
+
+- id: js-arrays-001
+  topic: javascript
+  difficulty: principiante
+  type: code
+  language: javascript
+  prompt: "¿Qué imprime este código?"
+  code: |
+    const items = [1, 2, 3];
+    items.push(4);
+    console.log(items.length);
+  options:
+    - { id: a, text: "3" }
+    - { id: b, text: "4" }
+    - { id: c, text: "5" }
+    - { id: d, text: "undefined" }
+  correct: b
+  explanation: "`push` añade un elemento al final del array y `length` indica cuántos tiene. `const` no lo impide, porque el array no se reasigna: solo se modifica."
+  verify: output
+
+- id: js-plantillas-001
+  topic: javascript
+  difficulty: principiante
+  type: code
+  language: javascript
+  prompt: "¿Qué imprime este código?"
+  code: |
+    const name = 'Ana';
+    console.log(`Hola, ${name}`);
+  options:
+    - { id: a, text: "Hola, ${name}" }
+    - { id: b, text: "Hola, name" }
+    - { id: c, text: "Hola, Ana" }
+    - { id: d, text: "Hola, undefined" }
+  correct: c
+  explanation: "Las plantillas de texto, escritas entre comillas invertidas, sustituyen `${...}` por el valor de la expresión. Con comillas simples o dobles se imprimiría el texto tal cual."
+  verify: output
+
+- id: js-conversion-001
+  topic: javascript
+  difficulty: principiante
+  type: code
+  language: javascript
+  prompt: "¿Qué imprime este código?"
+  code: |
+    console.log('2' + 2);
+    console.log('2' * 2);
+  options:
+    - { id: a, text: "4\n4" }
+    - { id: b, text: "22\n22" }
+    - { id: c, text: "4\n22" }
+    - { id: d, text: "22\n4" }
+  correct: d
+  explanation: "Con un texto, `+` concatena y convierte el número en texto, lo que da '22'. `*` solo trabaja con números, así que convierte '2' en 2 y da 4."
+  verify: output
+
+- id: js-ambito-001
+  topic: javascript
+  difficulty: principiante
+  type: concept
+  prompt: "¿Dónde se puede usar una variable declarada con `let` dentro de un `if`?"
+  options:
+    - { id: a, text: "En toda la función que contiene el `if`" }
+    - { id: b, text: "Solo dentro del bloque de ese `if`" }
+    - { id: c, text: "En cualquier parte del archivo" }
+    - { id: d, text: "En cualquier parte del programa" }
+  correct: b
+  explanation: "`let` y `const` tienen ámbito de bloque: solo existen entre las llaves donde se declaran. `var`, en cambio, tiene ámbito de función."
+
+- id: js-spread-001
+  topic: javascript
+  difficulty: intermedio
+  type: code
+  language: javascript
+  prompt: "¿Qué imprime este código?"
+  code: |
+    const a = { x: 1, y: 2 };
+    const b = { ...a, y: 3 };
+    console.log(a.y, b.y);
+  options:
+    - { id: a, text: "2 3" }
+    - { id: b, text: "3 3" }
+    - { id: c, text: "2 2" }
+    - { id: d, text: "3 2" }
+  correct: a
+  explanation: "La sintaxis `...` copia las propiedades de `a` en un objeto nuevo, y la `y` escrita después sobrescribe la copiada. El objeto original no cambia."
+  verify: output
+
+- id: js-reduce-001
+  topic: javascript
+  difficulty: intermedio
+  type: code
+  language: javascript
+  prompt: "¿Qué imprime este código?"
+  code: |
+    const total = [1, 2, 3, 4].reduce((sum, n) => sum + n * 2, 0);
+    console.log(total);
+  options:
+    - { id: a, text: "10" }
+    - { id: b, text: "24" }
+    - { id: c, text: "20" }
+    - { id: d, text: "2,4,6,8" }
+  correct: c
+  explanation: "`reduce` acumula un valor partiendo de 0 y suma cada número multiplicado por 2: 2 + 4 + 6 + 8 = 20."
+  verify: output
+
+- id: js-tdz-001
+  topic: javascript
+  difficulty: intermedio
+  type: code
+  language: javascript
+  prompt: "¿Qué error produce este código?"
+  code: |
+    console.log(value);
+    let value = 1;
+  options:
+    - { id: a, text: "TypeError" }
+    - { id: b, text: "RangeError" }
+    - { id: c, text: "SyntaxError" }
+    - { id: d, text: "ReferenceError" }
+  correct: d
+  explanation: "Una variable con `let` no se puede usar antes de su declaración: está en la llamada zona muerta temporal. Con `var` se imprimiría `undefined`."
+  verify: error
+
+- id: js-nullish-001
+  topic: javascript
+  difficulty: intermedio
+  type: code
+  language: javascript
+  prompt: "¿Qué imprime este código?"
+  code: |
+    console.log(0 || 5);
+    console.log(0 ?? 5);
+  options:
+    - { id: a, text: "0\n0" }
+    - { id: b, text: "5\n0" }
+    - { id: c, text: "5\n5" }
+    - { id: d, text: "0\n5" }
+  correct: b
+  explanation: "`||` recurre al segundo valor con cualquier valor falso, y 0 lo es. `??` solo lo hace con `null` o `undefined`, así que conserva el 0."
+  verify: output
+
+- id: js-allsettled-001
+  topic: javascript
+  difficulty: avanzado
+  type: code
+  language: javascript
+  prompt: "¿Qué imprime este código?"
+  code: |
+    const ok = Promise.resolve(1);
+    const failed = Promise.reject(new Error('fallo'));
+
+    Promise.allSettled([ok, failed]).then((results) => {
+      console.log(results.map((result) => result.status).join());
+    });
+  options:
+    - { id: a, text: "fulfilled,fulfilled" }
+    - { id: b, text: "fulfilled" }
+    - { id: c, text: "fulfilled,rejected" }
+    - { id: d, text: "rejected" }
+  correct: c
+  explanation: "`Promise.allSettled` espera a todas las promesas e informa del resultado de cada una, sin rechazarse. `Promise.all`, en cambio, se rechazaría con el primer fallo."
+  verify: output
+
+- id: js-closures-002
+  topic: javascript
+  difficulty: avanzado
+  type: code
+  language: javascript
+  prompt: "¿Qué imprime este código?"
+  code: |
+    function createCounter() {
+      let count = 0;
+      return () => ++count;
+    }
+
+    const a = createCounter();
+    const b = createCounter();
+    a();
+    a();
+    console.log(a(), b());
+  options:
+    - { id: a, text: "3 1" }
+    - { id: b, text: "3 4" }
+    - { id: c, text: "1 1" }
+    - { id: d, text: "3 3" }
+  correct: a
+  explanation: "Cada llamada a `createCounter` crea su propia variable `count`, que la función devuelta conserva mediante un closure. Por eso los contadores son independientes."
+  verify: output
+
+- id: js-prototipo-001
+  topic: javascript
+  difficulty: avanzado
+  type: code
+  language: javascript
+  prompt: "¿Qué imprime este código?"
+  code: |
+    const base = { greet() { return 'base'; } };
+    const child = Object.create(base);
+
+    child.greet = () => 'child';
+    delete child.greet;
+
+    console.log(child.greet());
+  options:
+    - { id: a, text: "child" }
+    - { id: b, text: "undefined" }
+    - { id: c, text: "TypeError" }
+    - { id: d, text: "base" }
+  correct: d
+  explanation: "`delete` elimina solo la propiedad propia de `child`. Al buscar `greet`, JavaScript sigue la cadena de prototipos y encuentra la de `base`."
+  verify: output
+
+- id: js-await-001
+  topic: javascript
+  difficulty: avanzado
+  type: concept
+  prompt: "¿Qué ocurre con el hilo principal mientras una función `async` espera en un `await`?"
+  options:
+    - { id: a, text: "Queda bloqueado hasta que se resuelva la promesa" }
+    - { id: b, text: "Queda libre para ejecutar otras tareas" }
+    - { id: c, text: "Se crea otro hilo para continuar la función" }
+    - { id: d, text: "Se reinicia cuando se resuelve la promesa" }
+  correct: b
+  explanation: "`await` suspende solo esa función y devuelve el control al bucle de eventos. La función continúa más tarde, como microtarea, cuando la promesa se resuelve."

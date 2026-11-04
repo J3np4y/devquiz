@@ -22,12 +22,12 @@ test.describe('8. Sin conexión', () => {
 
     await expect(page.getByRole('heading', { name: 'Reto rápido' })).toBeVisible();
     await startFiltered(page, 'sql', 'avanzado');
-    await finishChallenge(page, [true, false, true]);
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Has acertado 2 de 3');
+    await finishChallenge(page, [true, false, true, true, true, true, true]);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Has acertado 6 de 7');
 
     await page.goto('./#/');
     await page.reload();
-    expect(await statValues(page)).toEqual(['3', '67 %', '1']);
+    expect(await statValues(page)).toEqual(['7', '86 %', '1']);
   });
 
   test('una ruta interna también carga sin red', async ({ page, context }) => {
@@ -117,7 +117,7 @@ test('no hace peticiones a terceros', async ({ page, baseURL }) => {
   await page.goto('./');
   await waitForOfflineReady(page);
   await startFiltered(page, 'sql', 'avanzado');
-  await finishChallenge(page, [true, false, true]);
+  await finishChallenge(page, [true, false, true, true, true, true, true]);
   await page.getByRole('button', { name: 'Volver al inicio' }).first().click();
 
   expect(external).toEqual([]);

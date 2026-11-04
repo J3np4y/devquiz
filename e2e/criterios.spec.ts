@@ -1,11 +1,13 @@
 import { expect, test } from '@playwright/test';
 import {
+  SHORT_CHALLENGE,
   STORAGE_KEY,
   activeSession,
   answer,
   currentQuestion,
   finishChallenge,
   next,
+  openChallengeWith,
   optionIndex,
   readProgress,
   seed,
@@ -27,7 +29,7 @@ test.describe('1. Iniciar retos', () => {
 
   test('un filtro limita las preguntas por tema y dificultad', async ({ page }) => {
     await startFiltered(page, 'sql', 'avanzado');
-    await expect(page.getByText('Reto a medida · Pregunta 1 de 3')).toBeVisible();
+    await expect(page.getByText('Reto a medida · Pregunta 1 de 7')).toBeVisible();
 
     for (const question of sessionQuestions(await activeSession(page))) {
       expect(question.topic).toBe('sql');
@@ -37,9 +39,9 @@ test.describe('1. Iniciar retos', () => {
 
   test('avisa de que un filtro con pocas preguntas da un reto más corto', async ({ page }) => {
     await page.getByLabel('Tema').selectOption('python');
-    await expect(page.getByText('El reto tendrá 10 preguntas.')).toHaveCount(0);
+    await expect(page.getByText('El reto tendrá 10 preguntas.')).toBeVisible();
     await page.getByLabel('Nivel').selectOption('intermedio');
-    await expect(page.getByText('Solo hay 3 preguntas con este filtro')).toBeVisible();
+    await expect(page.getByText('Solo hay 7 preguntas con este filtro')).toBeVisible();
   });
 });
 
@@ -89,7 +91,7 @@ test.describe('3. Feedback y explicación', () => {
 });
 
 test('4. El resumen permite revisar las respuestas', async ({ page }) => {
-  await startFiltered(page, 'sql', 'intermedio');
+  await openChallengeWith(page, SHORT_CHALLENGE);
   await finishChallenge(page, [false, true, false]);
 
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Has acertado 1 de 3');
@@ -112,7 +114,7 @@ test.describe('5. Repaso de fallos', () => {
   });
 
   test('una pregunta fallada sale de la lista al acertarla', async ({ page }) => {
-    await startFiltered(page, 'testing', 'avanzado');
+    await openChallengeWith(page, SHORT_CHALLENGE);
     await finishChallenge(page, [false, true, true]);
     await page.getByRole('button', { name: 'Volver al inicio' }).first().click();
     await expect(page.getByText('Tienes 1 pregunta fallada')).toBeVisible();
@@ -130,7 +132,7 @@ test.describe('5. Repaso de fallos', () => {
   });
 
   test('sigue en la lista si se vuelve a fallar', async ({ page }) => {
-    await startFiltered(page, 'testing', 'avanzado');
+    await openChallengeWith(page, SHORT_CHALLENGE);
     await finishChallenge(page, [false, true, true]);
     await page.getByRole('button', { name: /Repasar fallos \(1\)/ }).click();
     await finishChallenge(page, [false]);
@@ -162,7 +164,7 @@ test.describe('6. Conservar y reiniciar el progreso', () => {
   });
 
   test('las estadísticas se conservan al recargar', async ({ page }) => {
-    await startFiltered(page, 'sql', 'avanzado');
+    await openChallengeWith(page, SHORT_CHALLENGE);
     await finishChallenge(page, [true, true, false]);
     await page.goto('./#/');
     await page.reload();
@@ -187,7 +189,7 @@ test.describe('6. Conservar y reiniciar el progreso', () => {
   });
 
   test('reiniciar pide confirmación y borra el progreso', async ({ page }) => {
-    await startFiltered(page, 'sql', 'avanzado');
+    await openChallengeWith(page, SHORT_CHALLENGE);
     await finishChallenge(page, [true, false, false]);
     await page.getByRole('button', { name: 'Volver al inicio' }).first().click();
 
@@ -208,7 +210,7 @@ test.describe('6. Conservar y reiniciar el progreso', () => {
 
 test.describe('Navegación', () => {
   test('el botón Atrás tras terminar un reto no vuelve a él', async ({ page }) => {
-    await startFiltered(page, 'sql', 'avanzado');
+    await openChallengeWith(page, SHORT_CHALLENGE);
     await finishChallenge(page, [true, true, true]);
     await page.goBack();
     await expect(page.getByRole('heading', { name: 'Reto rápido' })).toBeVisible();
@@ -223,7 +225,7 @@ test.describe('Navegación', () => {
 
   test('el título de la página refleja la pantalla', async ({ page }) => {
     await expect(page).toHaveTitle('DevQuiz');
-    await startFiltered(page, 'sql', 'avanzado');
+    await openChallengeWith(page, SHORT_CHALLENGE);
     await expect(page).toHaveTitle('Pregunta 1 de 3 · DevQuiz');
     await finishChallenge(page, [true, true, true]);
     await expect(page).toHaveTitle('Resultados · DevQuiz');
@@ -258,7 +260,7 @@ test.describe('Datos guardados problemáticos', () => {
     await page.reload();
     await expect(page.getByRole('alert')).toContainText('no permite guardar');
     await startFiltered(page, 'sql', 'avanzado');
-    for (let question = 0; question < 3; question++) {
+    for (let question = 0; question < 7; question++) {
       await page.locator('.option').first().click();
       await next(page);
     }

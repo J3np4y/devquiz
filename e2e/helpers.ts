@@ -6,6 +6,9 @@ import type { Progress, Session } from '../src/core/types.ts';
 
 export const STORAGE_KEY = 'devquiz.progress';
 
+/** Reto de 3 preguntas de SQL, para las pruebas que no dependen de la selección. */
+export const SHORT_CHALLENGE = ['sql-count-001', 'sql-join-001', 'sql-having-001'];
+
 export const { questions: bank } = loadBank(
   fileURLToPath(new URL('../content/questions/', import.meta.url)),
 );

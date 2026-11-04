@@ -4,8 +4,7 @@ import { checkCoverage, coverageTable } from './content/coverage.ts';
 import { loadBank } from './content/load.ts';
 import { PYTHON, verifyQuestion } from './content/verify.ts';
 
-/** Fase 1: 3 preguntas por combinación de tema y nivel. La fase 6 lo sube a 7. */
-const MIN_PER_COMBINATION = 3;
+const MIN_PER_COMBINATION = 7;
 const QUESTIONS_DIR = fileURLToPath(new URL('../content/questions/', import.meta.url));
 
 const { questions, errors } = loadBank(QUESTIONS_DIR);

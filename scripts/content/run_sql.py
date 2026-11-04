@@ -11,7 +11,8 @@ def main(path):
     with open(path, encoding="utf-8") as file:
         lines = file.read().splitlines(keepends=True)
 
-    connection = sqlite3.connect(":memory:")
+    # Sin transacciones implícitas de Python, para que BEGIN y ROLLBACK funcionen como se escriben.
+    connection = sqlite3.connect(":memory:", isolation_level=None)
     statement = ""
     for line in lines:
         statement += line

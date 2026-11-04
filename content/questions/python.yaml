@@ -94,7 +94,7 @@
   type: concept
   prompt: "¿Qué garantiza un bloque `with open(...) as f`?"
   options:
-    - { id: a, text: "Que el archivo se lee completo en memoria" }
+    - { id: a, text: "Que el archivo se lee completo en memoria antes de ejecutar el contenido del bloque" }
     - { id: b, text: "Que ningún otro proceso puede abrir el archivo" }
     - { id: c, text: "Que el archivo se cierra al salir, aunque haya una excepción" }
     - { id: d, text: "Que las excepciones del bloque quedan silenciadas" }
@@ -155,3 +155,241 @@
     - { id: d, text: "Compresión de datos escrita en Python puro" }
   correct: b
   explanation: "El GIL solo deja ejecutar bytecode de Python a un hilo cada vez, pero se libera durante las esperas de entrada y salida. Para trabajo de CPU se suele recurrir a `multiprocessing`."
+
+- id: py-slices-001
+  topic: python
+  difficulty: principiante
+  type: code
+  language: python
+  prompt: "¿Qué imprime este código?"
+  code: |
+    print("python"[1:4])
+  options:
+    - { id: a, text: "pyt" }
+    - { id: b, text: "ytho" }
+    - { id: c, text: "yth" }
+    - { id: d, text: "pyth" }
+  correct: c
+  explanation: "Un corte `[1:4]` incluye el índice inicial y excluye el final. Los índices empiezan en 0, así que toma las posiciones 1, 2 y 3."
+  verify: output
+
+- id: py-division-001
+  topic: python
+  difficulty: principiante
+  type: code
+  language: python
+  prompt: "¿Qué imprime este código?"
+  code: |
+    print(7 // 2, 7 % 2, 7 / 2)
+  options:
+    - { id: a, text: "3 1 3.5" }
+    - { id: b, text: "3.5 1 3" }
+    - { id: c, text: "3 2 3.5" }
+    - { id: d, text: "4 1 3.5" }
+  correct: a
+  explanation: "`//` es la división entera, `%` el resto y `/` la división real, que siempre devuelve un número decimal."
+  verify: output
+
+- id: py-conjuntos-001
+  topic: python
+  difficulty: principiante
+  type: code
+  language: python
+  prompt: "¿Qué imprime este código?"
+  code: |
+    print(len({1, 2, 2, 3}))
+  options:
+    - { id: a, text: "4" }
+    - { id: b, text: "2" }
+    - { id: c, text: "1" }
+    - { id: d, text: "3" }
+  correct: d
+  explanation: "Un conjunto no admite elementos repetidos, así que el 2 duplicado se descarta y quedan 1, 2 y 3."
+  verify: output
+
+- id: py-none-001
+  topic: python
+  difficulty: principiante
+  type: concept
+  prompt: "¿Qué devuelve una función de Python que termina sin ejecutar ningún `return`?"
+  options:
+    - { id: a, text: "`0`" }
+    - { id: b, text: "`None`" }
+    - { id: c, text: "`False`" }
+    - { id: d, text: "Una cadena vacía" }
+  correct: b
+  explanation: "Toda función devuelve algo. Si no hay un `return` que se ejecute, el valor devuelto es `None`."
+
+- id: py-copia-001
+  topic: python
+  difficulty: intermedio
+  type: code
+  language: python
+  prompt: "¿Qué imprime este código?"
+  code: |
+    import copy
+
+    a = [[1], [2]]
+    shallow = a.copy()
+    deep = copy.deepcopy(a)
+    a[0].append(9)
+
+    print(shallow[0], deep[0])
+  options:
+    - { id: a, text: "[1] [1]" }
+    - { id: b, text: "[1, 9] [1, 9]" }
+    - { id: c, text: "[1, 9] [1]" }
+    - { id: d, text: "[1] [1, 9]" }
+  correct: c
+  explanation: "`copy()` crea una lista nueva, pero comparte las listas interiores con la original. `deepcopy` copia también los objetos interiores, así que no le afecta el cambio."
+  verify: output
+
+- id: py-zip-001
+  topic: python
+  difficulty: intermedio
+  type: code
+  language: python
+  prompt: "¿Qué imprime este código?"
+  code: |
+    print(list(zip([1, 2, 3], "ab")))
+  options:
+    - { id: a, text: "[(1, 'a'), (2, 'b')]" }
+    - { id: b, text: "[(1, 'a'), (2, 'b'), (3, None)]" }
+    - { id: c, text: "[1, 'a', 2, 'b', 3]" }
+    - { id: d, text: "[(1, 2, 3), ('a', 'b')]" }
+  correct: a
+  explanation: "`zip` empareja elementos y se detiene con la secuencia más corta, por lo que el 3 queda fuera. Para rellenar los huecos existe `itertools.zip_longest`."
+  verify: output
+
+- id: py-contar-001
+  topic: python
+  difficulty: intermedio
+  type: code
+  language: python
+  prompt: "¿Qué imprime este código?"
+  code: |
+    counts = {}
+    for word in ["a", "b", "a"]:
+        counts[word] = counts.get(word, 0) + 1
+    print(counts)
+  options:
+    - { id: a, text: "{'a': 1, 'b': 1}" }
+    - { id: b, text: "{'a': 2, 'b': 1}" }
+    - { id: c, text: "{'a': 2, 'b': 2}" }
+    - { id: d, text: "['a', 'b', 'a']" }
+  correct: b
+  explanation: "`get` devuelve 0 cuando la clave aún no existe, lo que evita un `KeyError`. Así, cada palabra suma 1 a su contador."
+  verify: output
+
+- id: py-identidad-001
+  topic: python
+  difficulty: intermedio
+  type: code
+  language: python
+  prompt: "¿Qué imprime este código?"
+  code: |
+    a = [1]
+    b = [1]
+    print(a == b, a is b)
+  options:
+    - { id: a, text: "True True" }
+    - { id: b, text: "False False" }
+    - { id: c, text: "False True" }
+    - { id: d, text: "True False" }
+  correct: d
+  explanation: "`==` compara el contenido y `is` comprueba si son el mismo objeto. Son dos listas distintas con el mismo contenido."
+  verify: output
+
+- id: py-decorador-001
+  topic: python
+  difficulty: avanzado
+  type: code
+  language: python
+  prompt: "¿Qué imprime este código?"
+  code: |
+    def twice(func):
+        def wrapper(x):
+            return func(func(x))
+        return wrapper
+
+    @twice
+    def increment(x):
+        return x + 1
+
+    print(increment(1))
+  options:
+    - { id: a, text: "2" }
+    - { id: b, text: "3" }
+    - { id: c, text: "4" }
+    - { id: d, text: "1" }
+  correct: b
+  explanation: "`@twice` sustituye `increment` por `wrapper`, que llama dos veces a la función original: 1 pasa a 2, y 2 pasa a 3."
+  verify: output
+
+- id: py-clase-001
+  topic: python
+  difficulty: avanzado
+  type: code
+  language: python
+  prompt: "¿Qué imprime este código?"
+  code: |
+    class Cart:
+        items = []
+
+    a = Cart()
+    b = Cart()
+    a.items.append(1)
+    print(b.items)
+  options:
+    - { id: a, text: "[]" }
+    - { id: b, text: "None" }
+    - { id: c, text: "[1]" }
+    - { id: d, text: "AttributeError" }
+  correct: c
+  explanation: "`items` es un atributo de clase, así que lo comparten todas las instancias. Para que cada una tenga el suyo, se crea en `__init__` con `self.items = []`."
+  verify: output
+
+- id: py-mro-001
+  topic: python
+  difficulty: avanzado
+  type: code
+  language: python
+  prompt: "¿Qué imprime este código?"
+  code: |
+    class A:
+        def who(self):
+            return "A"
+
+    class B(A):
+        def who(self):
+            return "B" + super().who()
+
+    class C(A):
+        def who(self):
+            return "C" + super().who()
+
+    class D(B, C):
+        pass
+
+    print(D().who())
+  options:
+    - { id: a, text: "BA" }
+    - { id: b, text: "BCA" }
+    - { id: c, text: "BAC" }
+    - { id: d, text: "CBA" }
+  correct: b
+  explanation: "`super()` no apunta al padre directo, sino a la siguiente clase del orden de resolución de `D`, que es D, B, C, A. Por eso, desde `B` se llega a `C`."
+  verify: output
+
+- id: py-asyncio-001
+  topic: python
+  difficulty: avanzado
+  type: concept
+  prompt: "¿Qué ocurre si una corrutina de `asyncio` llama a `time.sleep(5)`?"
+  options:
+    - { id: a, text: "Solo se pausa esa corrutina, y las demás siguen" }
+    - { id: b, text: "Se bloquea todo el bucle de eventos durante 5 segundos" }
+    - { id: c, text: "Python la convierte automáticamente en `asyncio.sleep`" }
+    - { id: d, text: "Se lanza una excepción por usar una función síncrona" }
+  correct: b
+  explanation: "`time.sleep` no cede el control, así que ninguna otra corrutina puede avanzar. Dentro de una corrutina se usa `await asyncio.sleep(5)`."
