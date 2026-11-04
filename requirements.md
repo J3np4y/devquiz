@@ -64,6 +64,8 @@ Aplicación web adaptable a móvil para que desarrolladores repasen conocimiento
 - Seguir funcionando si los datos están corruptos o el almacenamiento no está disponible, avisando de que el progreso no se guardará.
 - Ignorar sin error el historial de preguntas que ya no existan en el banco.
 - Solicitar almacenamiento persistente al navegador cuando esté disponible.
+- Mantener el progreso coherente entre varias pestañas abiertas a la vez.
+- Avisar en cualquier pantalla si no se ha podido guardar.
 - No solicitar ni almacenar datos personales en el MVP.
 - No incluir analítica ni cargar recursos de terceros (CDN, fuentes externas).
 - No requerir backend, cuenta ni sincronización entre dispositivos.
@@ -72,9 +74,9 @@ Aplicación web adaptable a móvil para que desarrolladores repasen conocimiento
 
 - Adaptar la interfaz a móvil y escritorio.
 - Seguir la preferencia de tema claro u oscuro del sistema.
-- Mantener una navegación clara y permitir el uso mediante teclado: `1-4` para responder, `Enter` para avanzar y foco gestionado al cambiar de pantalla.
+- Mantener una navegación clara y permitir el uso mediante teclado: `1-4` para responder, `Enter` para avanzar y foco gestionado al cambiar de pantalla. Los atajos de una sola tecla se pueden desactivar.
 - Anunciar el resultado de cada respuesta a los lectores de pantalla y no depender solo del color para indicarlo.
-- Presentar los fragmentos de código de forma legible, con resaltado de sintaxis y scroll horizontal, sin ajuste de línea.
+- Presentar los fragmentos de código de forma legible, con resaltado de sintaxis y scroll horizontal, sin ajuste de línea, indicando el entorno en que se ejecutan.
 - Funcionar sin conexión tras la primera visita.
 
 ## Contenido inicial

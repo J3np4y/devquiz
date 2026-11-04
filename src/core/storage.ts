@@ -4,6 +4,25 @@ export const STORAGE_KEY = 'devquiz.progress';
 
 export type StorageLike = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 
+const SHORTCUTS_KEY = 'devquiz.shortcuts';
+
+/** Preferencia del dispositivo, ajena al progreso: reiniciar el progreso no la borra. */
+export function loadShortcutsEnabled(storage: StorageLike | null): boolean {
+  try {
+    return storage?.getItem(SHORTCUTS_KEY) !== 'off';
+  } catch {
+    return true;
+  }
+}
+
+export function saveShortcutsEnabled(storage: StorageLike | null, enabled: boolean): void {
+  try {
+    storage?.setItem(SHORTCUTS_KEY, enabled ? 'on' : 'off');
+  } catch {
+    // Sin almacenamiento, la preferencia solo dura hasta recargar.
+  }
+}
+
 /**
  * - `ok`: datos cargados, o ninguno todavía.
  * - `corrupt`: datos ilegibles; se empieza de cero y se sobrescribirán.

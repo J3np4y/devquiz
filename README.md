@@ -22,7 +22,7 @@ Antes de subir cambios, ejecuta lint, tipos, tests y build:
 npm run check
 ```
 
-Las pruebas E2E se ejecutan contra la compilación de producción, en escritorio y móvil, e incluyen axe. La primera vez hay que instalar el navegador con `npx playwright install chromium`:
+Las pruebas E2E se ejecutan contra la compilación de producción e incluyen axe. Usan Chromium y WebKit, y además Firefox en CI. La primera vez hay que instalar los navegadores con `npx playwright install chromium webkit`:
 
 ```bash
 npm run test:e2e

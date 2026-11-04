@@ -27,9 +27,11 @@ import {
   canSave,
   clearProgress,
   loadProgress,
+  loadShortcutsEnabled,
   migrate,
   requestPersistentStorage,
   saveProgress,
+  saveShortcutsEnabled,
   type StorageLike,
 } from './storage.ts';
 import {
@@ -396,6 +398,21 @@ describe('reconcileActive', () => {
     expect(progress.sessions[0]).toMatchObject({ status: 'abandoned', questions: [] });
   });
 
+  it('elimina las opciones repetidas en datos manipulados', () => {
+    const progress = started(questions);
+    const session = activeSession(progress) as Session;
+    const tampered: Progress = {
+      ...progress,
+      sessions: [
+        {
+          ...session,
+          questions: session.questions.map((item) => ({ ...item, optionOrder: ['a', 'a', 'b', 'c'] })),
+        },
+      ],
+    };
+    expect(activeSession(reconcileActive(tampered, questions, 2))?.questions[0]?.optionOrder).toEqual(['a', 'b', 'c']);
+  });
+
   it('actualiza las opciones de una pregunta modificada', () => {
     const edited: Question = {
       ...first,
@@ -472,6 +489,39 @@ describe('persistencia', () => {
     saveProgress(storage, started([makeQuestion('a')]));
     expect(clearProgress(storage)).toBe(true);
     expect(storage.data).toEqual({});
+  });
+
+  describe('preferencia de atajos', () => {
+    it('están activados por defecto y se recuerda desactivarlos', () => {
+      const storage = memoryStorage();
+      expect(loadShortcutsEnabled(storage)).toBe(true);
+      saveShortcutsEnabled(storage, false);
+      expect(loadShortcutsEnabled(storage)).toBe(false);
+      saveShortcutsEnabled(storage, true);
+      expect(loadShortcutsEnabled(storage)).toBe(true);
+    });
+
+    it('reiniciar el progreso no la borra', () => {
+      const storage = memoryStorage();
+      saveShortcutsEnabled(storage, false);
+      clearProgress(storage);
+      expect(loadShortcutsEnabled(storage)).toBe(false);
+    });
+
+    it('no falla sin almacenamiento', () => {
+      const broken: StorageLike = {
+        getItem: () => {
+          throw new Error('bloqueado');
+        },
+        setItem: () => {
+          throw new Error('bloqueado');
+        },
+        removeItem: () => {},
+      };
+      expect(loadShortcutsEnabled(broken)).toBe(true);
+      expect(loadShortcutsEnabled(null)).toBe(true);
+      expect(() => saveShortcutsEnabled(broken, false)).not.toThrow();
+    });
   });
 
   describe('requestPersistentStorage', () => {

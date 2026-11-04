@@ -3,6 +3,13 @@ import type { ChallengeMode, Difficulty, Question, Topic } from '../core/types.t
 /** Pregunta tal como llega a la app: con el código ya resaltado al compilar. */
 export type AppQuestion = Question & { codeHtml?: string };
 
+/** Entorno en que CI verifica los fragmentos: el resultado de algunos depende de él. */
+export const LANGUAGE_LABELS: Record<NonNullable<Question['language']>, string> = {
+  javascript: 'JavaScript en Node.js 24',
+  python: 'Python 3.12',
+  sql: 'SQL en SQLite',
+};
+
 export const TOPIC_LABELS: Record<Topic, string> = {
   javascript: 'JavaScript',
   python: 'Python',

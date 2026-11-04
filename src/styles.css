@@ -234,6 +234,8 @@ code {
   background: var(--bg);
   color: var(--text);
   font: inherit;
+  /* iOS amplía la página al enfocar un campo con menos de 16 px. */
+  font-size: 1rem;
   font-weight: 400;
 }
 
@@ -362,6 +364,27 @@ code {
 .code {
   min-width: 0;
   max-width: 100%;
+  margin: 0;
+}
+
+.code-caption {
+  margin-top: 0.35rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.checkbox input {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: var(--accent);
 }
 
 /* El código no se ajusta: en Python la indentación importa, así que se desplaza. */

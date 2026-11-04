@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { reconcileActive } from '../core/session.ts';
 import {
+  STORAGE_KEY,
   canSave,
   clearProgress,
   loadProgress,
@@ -15,12 +16,14 @@ interface State {
   status: LoadStatus;
 }
 
-/** Mantiene el progreso en memoria y lo guarda cada vez que cambia. */
+function readState(bank: Bank, storage: StorageLike | null): State {
+  const { progress, status } = loadProgress(storage);
+  return { progress: reconcileActive(progress, bank, Date.now()), status };
+}
+
+/** Mantiene el progreso en memoria, lo guarda cada vez que cambia y lo sincroniza entre pestañas. */
 export function useProgress(bank: Bank, storage: StorageLike | null) {
-  const [state, setState] = useState<State>(() => {
-    const { progress, status } = loadProgress(storage);
-    return { progress: reconcileActive(progress, bank, Date.now()), status };
-  });
+  const [state, setState] = useState<State>(() => readState(bank, storage));
   const [saveFailed, setSaveFailed] = useState(false);
   const lastSaved = useRef(state.progress);
 
@@ -30,6 +33,19 @@ export function useProgress(bank: Bank, storage: StorageLike | null) {
     lastSaved.current = state.progress;
     setSaveFailed(!saveProgress(storage, state.progress));
   }, [state, storage]);
+
+  // Sin esto, cada pestaña sobrescribiría con su copia lo que haya guardado la otra.
+  useEffect(() => {
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== STORAGE_KEY && event.key !== null) return;
+      const next = readState(bank, storage);
+      lastSaved.current = next.progress;
+      setState(next);
+    };
+
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, [bank, storage]);
 
   const update = (change: (progress: Progress) => Progress) =>
     setState((current) => ({ ...current, progress: change(current.progress) }));

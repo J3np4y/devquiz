@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { checkCoverage } from './coverage.ts';
 import { parseBank } from './load.ts';
 import { DIFFICULTIES, TOPICS, questionSchema, type Question } from './schema.ts';
-import { verifyQuestion } from './verify.ts';
+import { runSnippet, verifyQuestion } from './verify.ts';
 
 const concept = {
   id: 'js-prueba-001',
@@ -45,6 +45,8 @@ describe('validador del banco', () => {
   it.each([
     ['sin explicación', { explanation: undefined }, 'explanation'],
     ['con explicación vacía', { explanation: '  ' }, 'explanation'],
+    ['con explicación que cita la última opción', { explanation: 'La última opción es un montículo.' }, 'explanation'],
+    ['con explicación que cita la opción b', { explanation: 'La opción b es la correcta.' }, 'explanation'],
     ['con respuesta inexistente', { correct: 'z' }, 'correct'],
     ['con dificultad desconocida', { difficulty: 'experto' }, 'difficulty'],
     ['con un campo desconocido', { extra: 1 }, ''],
@@ -128,6 +130,23 @@ describe('verificador de código', () => {
     expect(verifyQuestion(code('python', '{}["x"]', 'KeyError', 'error'))).toBeNull();
     expect(verifyQuestion(code('python', '{}["x"]', 'TypeError', 'error'))).toContain('se obtuvo');
     expect(verifyQuestion(code('python', 'print(1)', 'KeyError', 'error'))).toContain('terminó bien');
+  });
+
+  it('no acepta un error que solo se menciona en el mensaje de otro', () => {
+    const snippet = 'raise ValueError("no es un TypeError")';
+    expect(verifyQuestion(code('python', snippet, 'TypeError', 'error'))).toContain('se obtuvo');
+    expect(verifyQuestion(code('python', snippet, 'ValueError', 'error'))).toBeNull();
+    expect(verifyQuestion(code('javascript', 'null.x;', 'TypeError', 'error'))).toBeNull();
+  });
+
+  it('no expone a los fragmentos las variables de entorno, como los tokens de CI', () => {
+    process.env.DEVQUIZ_SECRETO = 'valor';
+    try {
+      expect(runSnippet('javascript', 'console.log(process.env.DEVQUIZ_SECRETO)').stdout.trim()).toBe('undefined');
+      expect(runSnippet('python', 'import os; print(os.environ.get("DEVQUIZ_SECRETO"))').stdout.trim()).toBe('None');
+    } finally {
+      delete process.env.DEVQUIZ_SECRETO;
+    }
   });
 
   it('no ejecuta las preguntas sin verificación', () => {

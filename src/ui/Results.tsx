@@ -2,17 +2,18 @@ import { useEffect, useRef } from 'react';
 import { sessionResult } from '../core/session.ts';
 import type { Session } from '../core/types.ts';
 import { MODE_LABELS, type AppQuestion } from './labels.ts';
-import { CodeBlock, QuestionTags, RichText, optionClass } from './QuestionParts.tsx';
+import { CodeBlock, QuestionTags, RichText, SaveFailedNotice, optionClass } from './QuestionParts.tsx';
 
 interface ResultsProps {
   session: Session;
   questionsById: ReadonlyMap<string, AppQuestion>;
   failedCount: number;
+  saveFailed: boolean;
   onReview: () => void;
   onHome: () => void;
 }
 
-export function Results({ session, questionsById, failedCount, onReview, onHome }: ResultsProps) {
+export function Results({ session, questionsById, failedCount, saveFailed, onReview, onHome }: ResultsProps) {
   const { total, correct } = sessionResult(session);
   const headingRef = useRef<HTMLHeadingElement>(null);
 
@@ -29,6 +30,8 @@ export function Results({ session, questionsById, failedCount, onReview, onHome 
           Has acertado {correct} de {total}
         </h1>
       </header>
+
+      {saveFailed && <SaveFailedNotice />}
 
       <div className="actions">
         {failedCount > 0 && (

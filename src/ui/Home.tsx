@@ -5,6 +5,7 @@ import { sessionResult } from '../core/session.ts';
 import type { LoadStatus } from '../core/storage.ts';
 import type { Bank, ChallengeFilters, Difficulty, Progress, Session, Topic } from '../core/types.ts';
 import { DIFFICULTIES, DIFFICULTY_LABELS, MODE_LABELS, TOPICS, TOPIC_LABELS } from './labels.ts';
+import { SaveFailedNotice } from './QuestionParts.tsx';
 
 const STATUS_NOTICES: Partial<Record<LoadStatus, string>> = {
   corrupt: 'No se ha podido leer el progreso guardado, así que empiezas de cero.',
@@ -16,7 +17,9 @@ const STATUS_NOTICES: Partial<Record<LoadStatus, string>> = {
 /** En iOS, solo las apps instaladas quedan a salvo del borrado de datos de Safari. */
 function needsInstallHint() {
   if (typeof window === 'undefined') return false;
-  const isIos = /iPhone|iPad|iPod/.test(window.navigator.userAgent);
+  const { userAgent, maxTouchPoints } = window.navigator;
+  // Los iPad modernos se identifican como Mac; se distinguen porque tienen pantalla táctil.
+  const isIos = /iPhone|iPad|iPod/.test(userAgent) || (/Macintosh/.test(userAgent) && maxTouchPoints > 1);
   const isInstalled =
     window.matchMedia('(display-mode: standalone)').matches ||
     (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
@@ -58,7 +61,7 @@ export function Home({
   const headingRef = useRef<HTMLHeadingElement>(null);
   const resetButtonRef = useRef<HTMLButtonElement>(null);
   const cancelResetRef = useRef<HTMLButtonElement>(null);
-  const firstRender = useRef(true);
+  const wasConfirmingReset = useRef(confirmingReset);
 
   // Al llegar desde otra pantalla, el foco y el scroll empiezan arriba.
   useEffect(() => {
@@ -68,10 +71,8 @@ export function Home({
 
   // El botón pulsado desaparece al confirmar o cancelar, así que el foco debe ir a otro sitio.
   useEffect(() => {
-    if (firstRender.current) {
-      firstRender.current = false;
-      return;
-    }
+    if (wasConfirmingReset.current === confirmingReset) return;
+    wasConfirmingReset.current = confirmingReset;
     (confirmingReset ? cancelResetRef : resetButtonRef).current?.focus();
   }, [confirmingReset]);
 
@@ -97,11 +98,7 @@ export function Home({
       </header>
 
       {notice && <p className="notice" role="alert">{notice}</p>}
-      {saveFailed && (
-        <p className="notice" role="alert">
-          No se ha podido guardar tu progreso. Puede que el almacenamiento del navegador esté lleno.
-        </p>
-      )}
+      {saveFailed && <SaveFailedNotice />}
 
       {active && activeResult && (
         <section className="card card--accent" aria-labelledby="resume-title">
