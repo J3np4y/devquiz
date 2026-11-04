@@ -63,8 +63,8 @@ export default defineConfig({
         description: 'Repasa conocimientos de desarrollo en sesiones breves.',
         lang: 'es',
         display: 'standalone',
-        theme_color: '#1f4fd8',
-        background_color: '#f6f7f9',
+        theme_color: '#0e1116',
+        background_color: '#0e1116',
         icons: [
           { src: 'pwa-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'pwa-512.png', sizes: '512x512', type: 'image/png' },

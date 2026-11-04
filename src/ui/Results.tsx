@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { sessionResult } from '../core/session.ts';
 import type { Session } from '../core/types.ts';
+import { Icon } from './Icon.tsx';
 import { MODE_LABELS, type AppQuestion } from './labels.ts';
 import { CodeBlock, QuestionTags, RichText, SaveFailedNotice, optionClass } from './QuestionParts.tsx';
 
@@ -15,6 +16,7 @@ interface ResultsProps {
 
 export function Results({ session, questionsById, failedCount, saveFailed, onReview, onHome }: ResultsProps) {
   const { total, correct } = sessionResult(session);
+  const percentage = total > 0 ? Math.round((correct / total) * 100) : 0;
   const headingRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
@@ -24,11 +26,30 @@ export function Results({ session, questionsById, failedCount, saveFailed, onRev
 
   return (
     <main className="page">
-      <header className="masthead">
-        <p className="mono eyebrow">{MODE_LABELS[session.mode]}</p>
-        <h1 tabIndex={-1} ref={headingRef}>
-          Has acertado {correct} de {total}
-        </h1>
+      <header className="score">
+        <div className="score-ring" aria-hidden="true">
+          <svg viewBox="0 0 120 120">
+            <circle className="score-track" cx="60" cy="60" r="52" />
+            {percentage > 0 && (
+              <circle
+                className="score-value"
+                cx="60"
+                cy="60"
+                r="52"
+                pathLength="100"
+                strokeDasharray={`${percentage} 100`}
+                transform="rotate(-90 60 60)"
+              />
+            )}
+          </svg>
+          <span className="mono">{percentage} %</span>
+        </div>
+        <div>
+          <p className="mono eyebrow">{MODE_LABELS[session.mode]}</p>
+          <h1 tabIndex={-1} ref={headingRef}>
+            Has acertado {correct} de {total}
+          </h1>
+        </div>
       </header>
 
       {saveFailed && <SaveFailedNotice />}
@@ -56,7 +77,10 @@ export function Results({ session, questionsById, failedCount, saveFailed, onRev
 
           return [
             <li key={item.questionId} className={`card review-item ${isCorrect ? 'review-item--correct' : 'review-item--wrong'}`}>
-              <p className="review-result">{isCorrect ? '✓ Correcta' : '✗ Incorrecta'}</p>
+              <p className="review-result">
+                <Icon name={isCorrect ? 'check' : 'cross'} />
+                {isCorrect ? 'Correcta' : 'Incorrecta'}
+              </p>
               <QuestionTags question={question} />
               <h3>
                 <RichText text={question.prompt} />
@@ -64,14 +88,14 @@ export function Results({ session, questionsById, failedCount, saveFailed, onRev
               <CodeBlock question={question} />
               <dl className="review-answers">
                 {!isCorrect && (
-                  <div>
+                  <div className="review-answer review-answer--wrong">
                     <dt>Tu respuesta</dt>
                     <dd className={optionClass(question)}>
                       {chosen ? <RichText text={chosen.text} /> : 'Esta opción ya no existe'}
                     </dd>
                   </div>
                 )}
-                <div>
+                <div className="review-answer review-answer--correct">
                   <dt>{isCorrect ? 'Tu respuesta, correcta' : 'Respuesta correcta'}</dt>
                   <dd className={optionClass(question)}>{right && <RichText text={right.text} />}</dd>
                 </div>

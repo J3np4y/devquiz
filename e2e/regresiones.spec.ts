@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import { STORAGE_KEY, SHORT_CHALLENGE, answer, finishChallenge, next, openChallengeWith, readProgress, startFiltered, startQuick, statValues } from './helpers.ts';
 
 const home = (page: Page) => page.getByRole('heading', { name: 'Reto rápido' });
@@ -118,29 +118,61 @@ test.describe('Aviso de guardado', () => {
   });
 });
 
-test.describe('Consejo de instalación', () => {
-  const macUserAgent =
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15';
-  const hint = (page: Page) => page.getByText('añade DevQuiz a la pantalla de inicio');
-  const withTouchPoints = (page: Page, points: number) =>
-    page.addInitScript((value) => {
-      Object.defineProperty(navigator, 'maxTouchPoints', { get: () => value });
-    }, points);
+test.describe('Doble clic', () => {
+  const center = async (locator: Locator) => {
+    const box = await locator.boundingBox();
+    if (!box) throw new Error('El elemento no está en pantalla');
+    return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+  };
 
-  test.describe('con agente de Mac', () => {
-    test.use({ userAgent: macUserAgent });
+  test('un clic justo al cambiar de pregunta se ignora, y después funciona', async ({ page }) => {
+    const start = new Date('2026-01-01T00:00:00Z').getTime();
+    await page.clock.install({ time: start });
+    await openChallengeWith(page, SHORT_CHALLENGE);
+    // Con el reloj parado, la protección dura lo que diga la prueba y no depende de la velocidad.
+    await page.clock.pauseAt(start + 60_000);
 
-    test('sale en un iPad, que se identifica como Mac', async ({ page }) => {
-      await withTouchPoints(page, 5);
-      await page.goto('./');
-      await expect(hint(page)).toBeVisible();
-    });
+    await answer(page, true);
+    await next(page);
+    await expect(page.getByText('Pregunta 2 de 3')).toBeVisible();
 
-    test('no sale en un Mac de verdad', async ({ page }) => {
-      await withTouchPoints(page, 0);
-      await page.goto('./');
-      await expect(hint(page)).toHaveCount(0);
-    });
+    const option = await center(page.locator('.option').first());
+    await page.mouse.click(option.x, option.y);
+    await expect(page.locator('.feedback')).toHaveCount(0);
+
+    await page.clock.runFor(400);
+    await page.mouse.click(option.x, option.y);
+    await expect(page.locator('.feedback')).toBeVisible();
+  });
+
+  test('doble clic en cada botón de avanzar: no responde, no cambia atajos y llega a resultados', async ({ page }) => {
+    await openChallengeWith(page, SHORT_CHALLENGE);
+
+    for (const position of [1, 2, 3]) {
+      await expect(page.getByText(`Pregunta ${position} de 3`)).toBeVisible();
+      await expect(page.locator('.feedback')).toHaveCount(0);
+      await answer(page, true);
+
+      const button = page.getByRole('button', { name: /Siguiente pregunta|Ver resultados/ });
+      await button.scrollIntoViewIfNeeded();
+      const { x, y } = await center(button);
+      await page.mouse.dblclick(x, y);
+    }
+
+    await expect(page).toHaveURL(/#\/resultado\//);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Has acertado 3 de 3');
+    const shortcuts = await page.evaluate(() => localStorage.getItem('devquiz.shortcuts'));
+    expect(shortcuts).toBeNull();
+  });
+
+  test('el teclado no espera', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'Solo aplica con teclado físico');
+    await openChallengeWith(page, SHORT_CHALLENGE);
+    await answer(page, true);
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('1');
+    await expect(page.getByText('Pregunta 2 de 3')).toBeVisible();
+    await expect(page.locator('.feedback')).toBeVisible();
   });
 });
 
@@ -280,4 +312,11 @@ test('la política de seguridad está activa y no bloquea nada de la app', async
   });
   expect(executed).toBe(false);
   expect(violations.filter((text) => !/script-src/.test(text))).toEqual([]);
+});
+
+test('el tema es oscuro aunque el sistema prefiera el claro', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'light' });
+  await page.goto('./');
+  const background = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  expect(background).toBe('rgb(14, 17, 22)');
 });

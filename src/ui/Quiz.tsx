@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { Session } from '../core/types.ts';
+import { Icon } from './Icon.tsx';
 import { MODE_LABELS, type AppQuestion } from './labels.ts';
 import { CodeBlock, QuestionTags, RichText, SaveFailedNotice, optionClass } from './QuestionParts.tsx';
 
@@ -70,7 +71,20 @@ export function Quiz({
           <span className="mono">
             {MODE_LABELS[session.mode]} · Pregunta {position} de {total}
           </span>
-          <progress value={position} max={total} aria-hidden="true" />
+          <span className="segments" aria-hidden="true">
+            {session.questions.map((entry, index) => (
+              <span
+                key={entry.questionId}
+                className={
+                  entry.answer
+                    ? `segment segment--${entry.answer.correct ? 'correct' : 'wrong'}`
+                    : index === session.currentIndex
+                      ? 'segment segment--current'
+                      : 'segment'
+                }
+              />
+            ))}
+          </span>
         </p>
         <button type="button" className="button button--quiet" onClick={onExit}>
           Salir
@@ -105,8 +119,18 @@ export function Quiz({
                 <span className={optionClass(question)}>
                   <RichText text={option.text} />
                 </span>
-                {answer && correct && <span className="option-mark">✓ Correcta</span>}
-                {answer && chosen && !correct && <span className="option-mark">✗ Tu respuesta</span>}
+                {answer && correct && (
+                  <span className="option-mark">
+                    <Icon name="check" />
+                    Correcta
+                  </span>
+                )}
+                {answer && chosen && !correct && (
+                  <span className="option-mark">
+                    <Icon name="cross" />
+                    Tu respuesta
+                  </span>
+                )}
               </button>
             </li>
           );
@@ -130,7 +154,10 @@ export function Quiz({
       <div role="status" className="feedback-region">
         {answer && (
           <div className={`feedback ${answer.correct ? 'feedback--correct' : 'feedback--wrong'}`}>
-            <p className="feedback-title">{answer.correct ? '✓ ¡Correcto!' : '✗ Incorrecto'}</p>
+            <p className="feedback-title">
+              <Icon name={answer.correct ? 'check' : 'cross'} />
+              {answer.correct ? '¡Correcto!' : 'Incorrecto'}
+            </p>
             <p>
               <RichText text={question.explanation} />
             </p>
@@ -150,6 +177,7 @@ export function Quiz({
           onClick={onNext}
         >
           {isLast ? 'Ver resultados' : 'Siguiente pregunta'}
+          <Icon name="arrow" />
         </button>
       )}
     </main>
