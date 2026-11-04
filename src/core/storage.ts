@@ -121,6 +121,21 @@ export function clearProgress(storage: StorageLike | null): boolean {
   }
 }
 
+/**
+ * Pide al navegador que no borre los datos si le falta espacio. Algunos navegadores lo preguntan
+ * al usuario, así que se hace al empezar un reto y no al abrir la app. Nunca lanza un error.
+ */
+export async function requestPersistentStorage(
+  storageManager: Pick<StorageManager, 'persist' | 'persisted'> | undefined = globalThis.navigator?.storage,
+): Promise<boolean> {
+  try {
+    if (!storageManager?.persist) return false;
+    return (await storageManager.persisted()) || (await storageManager.persist());
+  } catch {
+    return false;
+  }
+}
+
 /** Devuelve el almacenamiento del navegador, o null si no se puede usar. */
 export function browserStorage(): StorageLike | null {
   try {

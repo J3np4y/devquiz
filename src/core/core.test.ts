@@ -28,6 +28,7 @@ import {
   clearProgress,
   loadProgress,
   migrate,
+  requestPersistentStorage,
   saveProgress,
   type StorageLike,
 } from './storage.ts';
@@ -471,6 +472,44 @@ describe('persistencia', () => {
     saveProgress(storage, started([makeQuestion('a')]));
     expect(clearProgress(storage)).toBe(true);
     expect(storage.data).toEqual({});
+  });
+
+  describe('requestPersistentStorage', () => {
+    const manager = (persisted: boolean, granted: boolean) => {
+      const calls = { persist: 0 };
+      return {
+        calls,
+        persisted: async () => persisted,
+        persist: async () => {
+          calls.persist += 1;
+          return granted;
+        },
+      };
+    };
+
+    it('no vuelve a pedirlo si ya está concedido', async () => {
+      const fake = manager(true, true);
+      expect(await requestPersistentStorage(fake)).toBe(true);
+      expect(fake.calls.persist).toBe(0);
+    });
+
+    it('lo pide si aún no está concedido, y acepta una negativa', async () => {
+      const denied = manager(false, false);
+      expect(await requestPersistentStorage(denied)).toBe(false);
+      expect(denied.calls.persist).toBe(1);
+      expect(await requestPersistentStorage(manager(false, true))).toBe(true);
+    });
+
+    it('no falla si el navegador no lo admite o da error', async () => {
+      expect(await requestPersistentStorage(undefined)).toBe(false);
+      const broken = {
+        persisted: async () => {
+          throw new Error('no disponible');
+        },
+        persist: async () => true,
+      };
+      expect(await requestPersistentStorage(broken)).toBe(false);
+    });
   });
 
   it('browserStorage devuelve null fuera de un navegador', () => {
