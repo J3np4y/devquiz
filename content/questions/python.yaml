@@ -1,0 +1,157 @@
+- id: py-referencias-001
+  topic: python
+  difficulty: principiante
+  type: code
+  language: python
+  prompt: "¿Qué imprime este código?"
+  code: |
+    a = [1, 2]
+    b = a
+    b.append(3)
+    print(a)
+  options:
+    - { id: a, text: "[1, 2]" }
+    - { id: b, text: "[1, 2, 3]" }
+    - { id: c, text: "[3]" }
+    - { id: d, text: "None" }
+  correct: b
+  explanation: "`b = a` no copia la lista: ambos nombres apuntan al mismo objeto, así que el cambio se ve desde los dos. Para copiarla se usa `a.copy()`."
+  verify: output
+
+- id: py-dict-001
+  topic: python
+  difficulty: principiante
+  type: code
+  language: python
+  prompt: "¿Qué error produce este código?"
+  code: |
+    ages = {"ana": 30}
+    print(ages["luis"])
+  options:
+    - { id: a, text: "IndexError" }
+    - { id: b, text: "KeyError" }
+    - { id: c, text: "NameError" }
+    - { id: d, text: "ValueError" }
+  correct: b
+  explanation: "Acceder con corchetes a una clave que no existe lanza `KeyError`. Con `ages.get(\"luis\")` se obtendría `None` en lugar de un error."
+  verify: error
+
+- id: py-tuplas-001
+  topic: python
+  difficulty: principiante
+  type: concept
+  prompt: "¿Cuál es la diferencia principal entre una lista y una tupla?"
+  options:
+    - { id: a, text: "La tupla no se puede modificar tras crearla" }
+    - { id: b, text: "La lista solo admite elementos de un tipo" }
+    - { id: c, text: "La tupla no conserva el orden de sus elementos" }
+    - { id: d, text: "La lista no admite elementos repetidos" }
+  correct: a
+  explanation: "Las tuplas son inmutables y las listas, mutables. Ambas conservan el orden, admiten repetidos y pueden mezclar tipos."
+
+- id: py-default-001
+  topic: python
+  difficulty: intermedio
+  type: code
+  language: python
+  prompt: "¿Qué imprime este código?"
+  code: |
+    def add(item, items=[]):
+        items.append(item)
+        return items
+
+    add(1)
+    print(add(2))
+  options:
+    - { id: a, text: "[2]" }
+    - { id: b, text: "[1, 2]" }
+    - { id: c, text: "[1]" }
+    - { id: d, text: "[]" }
+  correct: b
+  explanation: "El valor por defecto se evalúa una sola vez, al definir la función, así que todas las llamadas comparten la misma lista. Lo habitual es usar `items=None` y crearla dentro."
+  verify: output
+
+- id: py-comprension-001
+  topic: python
+  difficulty: intermedio
+  type: code
+  language: python
+  prompt: "¿Qué imprime este código?"
+  code: |
+    print([x * 2 for x in range(5) if x % 2])
+  options:
+    - { id: a, text: "[0, 4, 8]" }
+    - { id: b, text: "[2, 6]" }
+    - { id: c, text: "[1, 3]" }
+    - { id: d, text: "[2, 4, 6, 8]" }
+  correct: b
+  explanation: "`x % 2` es verdadero para los impares, así que solo pasan 1 y 3. Al multiplicarlos por 2 se obtiene 2 y 6."
+  verify: output
+
+- id: py-with-001
+  topic: python
+  difficulty: intermedio
+  type: concept
+  prompt: "¿Qué garantiza un bloque `with open(...) as f`?"
+  options:
+    - { id: a, text: "Que el archivo se lee completo en memoria" }
+    - { id: b, text: "Que ningún otro proceso puede abrir el archivo" }
+    - { id: c, text: "Que el archivo se cierra al salir, aunque haya una excepción" }
+    - { id: d, text: "Que las excepciones del bloque quedan silenciadas" }
+  correct: c
+  explanation: "`with` llama a `__exit__` del gestor de contexto al salir del bloque, tanto si termina con normalidad como si se lanza una excepción. El archivo se cierra y la excepción sigue propagándose."
+
+- id: py-lambda-001
+  topic: python
+  difficulty: avanzado
+  type: code
+  language: python
+  prompt: "¿Qué imprime este código?"
+  code: |
+    funcs = [lambda: i for i in range(3)]
+    print([f() for f in funcs])
+  options:
+    - { id: a, text: "[0, 1, 2]" }
+    - { id: b, text: "[2, 2, 2]" }
+    - { id: c, text: "[3, 3, 3]" }
+    - { id: d, text: "[0, 0, 0]" }
+  correct: b
+  explanation: "Las funciones capturan la variable `i`, no su valor en cada vuelta, y la consultan al ejecutarse. Para entonces vale 2, su último valor. Con `lambda i=i: i` se fijaría el valor de cada vuelta."
+  verify: output
+
+- id: py-generador-001
+  topic: python
+  difficulty: avanzado
+  type: code
+  language: python
+  prompt: "¿Qué imprime este código?"
+  code: |
+    def numbers():
+        print("inicio")
+        yield 1
+        print("fin")
+
+    g = numbers()
+    print("creado")
+    print(next(g))
+  options:
+    - { id: a, text: "inicio\ncreado\n1" }
+    - { id: b, text: "creado\ninicio\n1" }
+    - { id: c, text: "creado\ninicio\n1\nfin" }
+    - { id: d, text: "inicio\n1\nfin\ncreado" }
+  correct: b
+  explanation: "Llamar a un generador no ejecuta su cuerpo. `next` lo ejecuta hasta el primer `yield` y lo deja en pausa, por lo que \"fin\" nunca llega a imprimirse."
+  verify: output
+
+- id: py-gil-001
+  topic: python
+  difficulty: avanzado
+  type: concept
+  prompt: "En CPython con GIL activo, ¿qué tipo de tarea se beneficia más de usar `threading`?"
+  options:
+    - { id: a, text: "Cálculos numéricos intensivos en Python puro" }
+    - { id: b, text: "Operaciones de red o de disco que pasan tiempo esperando" }
+    - { id: c, text: "Bucles de procesado de texto en Python puro" }
+    - { id: d, text: "Compresión de datos escrita en Python puro" }
+  correct: b
+  explanation: "El GIL solo deja ejecutar bytecode de Python a un hilo cada vez, pero se libera durante las esperas de entrada y salida. Para trabajo de CPU se suele recurrir a `multiprocessing`."

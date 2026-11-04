@@ -21,10 +21,15 @@ jobs:
         with:
           node-version: 24
           cache: npm
+      # Versión con la que se verifican las preguntas de Python y SQL.
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
       - run: npm ci
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run test
+      - run: npm run content:check
       - run: npm run build
       - uses: actions/upload-pages-artifact@v5
         if: github.ref == 'refs/heads/main'

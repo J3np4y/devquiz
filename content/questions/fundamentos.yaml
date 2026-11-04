@@ -1,0 +1,159 @@
+- id: fund-pila-001
+  topic: fundamentos
+  difficulty: principiante
+  type: code
+  language: python
+  prompt: "¿Qué imprime este código?"
+  code: |
+    stack = []
+    stack.append(1)
+    stack.append(2)
+    stack.append(3)
+    stack.pop()
+    print(stack[-1])
+  options:
+    - { id: a, text: "1" }
+    - { id: b, text: "2" }
+    - { id: c, text: "3" }
+    - { id: d, text: "None" }
+  correct: b
+  explanation: "Una pila saca primero lo último que entró. `pop` retira el 3, así que el elemento superior pasa a ser el 2."
+  verify: output
+
+- id: fund-cola-001
+  topic: fundamentos
+  difficulty: principiante
+  type: concept
+  prompt: "¿Qué estructura de datos atiende los elementos en el mismo orden en que llegaron?"
+  options:
+    - { id: a, text: "Una pila" }
+    - { id: b, text: "Una cola" }
+    - { id: c, text: "Un conjunto" }
+    - { id: d, text: "Un árbol binario" }
+  correct: b
+  explanation: "Una cola sigue el orden FIFO: el primero en entrar es el primero en salir. Una pila hace lo contrario."
+
+- id: fund-binaria-001
+  topic: fundamentos
+  difficulty: principiante
+  type: concept
+  prompt: "¿Qué condición deben cumplir los datos para aplicar una búsqueda binaria?"
+  options:
+    - { id: a, text: "No pueden contener valores repetidos" }
+    - { id: b, text: "Deben estar ordenados" }
+    - { id: c, text: "Deben ser números enteros" }
+    - { id: d, text: "Su cantidad debe ser una potencia de 2" }
+  correct: b
+  explanation: "Cada paso descarta la mitad de los datos comparando con el elemento central, y eso solo es válido si están ordenados."
+
+- id: fund-complejidad-001
+  topic: fundamentos
+  difficulty: intermedio
+  type: code
+  language: python
+  prompt: "¿Cuál es la complejidad temporal de esta función en el peor caso?"
+  code: |
+    def has_duplicates(items):
+        for i in range(len(items)):
+            for j in range(i + 1, len(items)):
+                if items[i] == items[j]:
+                    return True
+        return False
+  options:
+    - { id: a, text: "O(n)" }
+    - { id: b, text: "O(n log n)" }
+    - { id: c, text: "O(n²)" }
+    - { id: d, text: "O(2ⁿ)" }
+  correct: c
+  explanation: "Sin duplicados se comparan todos los pares, n(n-1)/2 en total, lo que crece como n². Usando un conjunto se puede resolver en O(n) de media."
+
+- id: fund-hash-001
+  topic: fundamentos
+  difficulty: intermedio
+  type: concept
+  prompt: "¿Cuál es el coste de buscar una clave en una tabla hash, de media y en el peor caso?"
+  options:
+    - { id: a, text: "O(1) de media y O(n) en el peor caso" }
+    - { id: b, text: "O(1) de media y O(1) en el peor caso" }
+    - { id: c, text: "O(log n) de media y O(n) en el peor caso" }
+    - { id: d, text: "O(n) de media y O(n²) en el peor caso" }
+  correct: a
+  explanation: "Una buena función hash reparte las claves y el acceso es directo de media. Si muchas claves colisionan, puede haber que recorrer casi todos los elementos."
+
+- id: fund-recursion-001
+  topic: fundamentos
+  difficulty: intermedio
+  type: code
+  language: javascript
+  prompt: "¿Qué imprime este código?"
+  code: |
+    function f(n) {
+      return n <= 1 ? 1 : f(n - 1) + f(n - 2);
+    }
+    console.log(f(5));
+  options:
+    - { id: a, text: "5" }
+    - { id: b, text: "8" }
+    - { id: c, text: "13" }
+    - { id: d, text: "120" }
+  correct: b
+  explanation: "Con f(0) = 1 y f(1) = 1, los siguientes valores son 2, 3, 5 y 8. Es una variante de Fibonacci; 120 sería el factorial de 5."
+  verify: output
+
+- id: fund-bfs-001
+  topic: fundamentos
+  difficulty: avanzado
+  type: code
+  language: python
+  prompt: "¿Qué imprime este recorrido del grafo?"
+  code: |
+    from collections import deque
+
+    graph = {"A": ["B", "C"], "B": ["D"], "C": ["E"], "D": [], "E": []}
+    seen = {"A"}
+    queue = deque(["A"])
+    order = []
+
+    while queue:
+        node = queue.popleft()
+        order.append(node)
+        for neighbor in graph[node]:
+            if neighbor not in seen:
+                seen.add(neighbor)
+                queue.append(neighbor)
+
+    print("".join(order))
+  options:
+    - { id: a, text: "ABDCE" }
+    - { id: b, text: "ABCDE" }
+    - { id: c, text: "ACEBD" }
+    - { id: d, text: "ABCED" }
+  correct: b
+  explanation: "Es un recorrido en anchura: la cola hace que se visiten todos los nodos de un nivel antes de pasar al siguiente. Un recorrido en profundidad daría ABDCE."
+  verify: output
+
+- id: fund-amortizado-001
+  topic: fundamentos
+  difficulty: avanzado
+  type: concept
+  prompt: "¿Por qué añadir al final de un array dinámico tiene coste amortizado O(1)?"
+  options:
+    - { id: a, text: "Porque nunca hace falta mover los elementos existentes" }
+    - { id: b, text: "Porque la capacidad crece en proporción y las copias son infrecuentes" }
+    - { id: c, text: "Porque la memoria se reserva por adelantado para el tamaño máximo" }
+    - { id: d, text: "Porque internamente los elementos se guardan en una lista enlazada" }
+  correct: b
+  explanation: "Al llenarse, el array se copia a uno mayor, por ejemplo del doble de capacidad. Esa copia cuesta O(n), pero ocurre tan pocas veces que, repartida entre todas las inserciones, el coste medio es constante."
+
+- id: fund-dijkstra-001
+  topic: fundamentos
+  difficulty: avanzado
+  type: concept
+  prompt: "¿Qué característica de un grafo impide garantizar un resultado correcto con el algoritmo de Dijkstra?"
+  options:
+    - { id: a, text: "Que tenga ciclos" }
+    - { id: b, text: "Que sea dirigido" }
+    - { id: c, text: "Que tenga aristas con peso negativo" }
+    - { id: d, text: "Que tenga muchas aristas" }
+  correct: c
+  explanation: "Dijkstra da por definitiva la distancia de un nodo al visitarlo, lo que deja de ser seguro si una arista negativa puede acortarla después. En ese caso se usa, por ejemplo, Bellman-Ford."

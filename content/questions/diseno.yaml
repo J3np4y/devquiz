@@ -1,0 +1,149 @@
+- id: dis-dry-001
+  topic: diseno
+  difficulty: principiante
+  type: concept
+  prompt: "¿Qué busca evitar el principio DRY?"
+  options:
+    - { id: a, text: "Duplicar el mismo conocimiento en varios sitios del código" }
+    - { id: b, text: "Escribir funciones de más de unas pocas líneas" }
+    - { id: c, text: "Añadir funcionalidades que aún no se necesitan" }
+    - { id: d, text: "Depender de librerías de terceros" }
+  correct: a
+  explanation: "DRY significa \"Don't Repeat Yourself\": cada conocimiento debe tener una única representación. Así, un cambio no obliga a tocar varios sitios. No añadir lo que aún no se necesita es YAGNI."
+
+- id: dis-srp-001
+  topic: diseno
+  difficulty: principiante
+  type: concept
+  prompt: "Según el principio de responsabilidad única, ¿cuándo conviene dividir una clase?"
+  options:
+    - { id: a, text: "Cuando tiene más de cinco métodos" }
+    - { id: b, text: "Cuando cambia por motivos distintos y no relacionados" }
+    - { id: c, text: "Cuando la usan varias clases diferentes" }
+    - { id: d, text: "Cuando hereda de otra clase" }
+  correct: b
+  explanation: "Una clase debería tener un único motivo para cambiar. Si, por ejemplo, calcula facturas y además las formatea en PDF, dos necesidades distintas acaban modificándola."
+
+- id: dis-magico-001
+  topic: diseno
+  difficulty: principiante
+  type: code
+  language: javascript
+  prompt: "¿Cuál es la mejora más directa para este código?"
+  code: |
+    if (order.status === 3) {
+      sendInvoice(order);
+    }
+  options:
+    - { id: a, text: "Sustituir el 3 por una constante con nombre" }
+    - { id: b, text: "Convertir el `if` en un bucle" }
+    - { id: c, text: "Cambiar `===` por `==`" }
+    - { id: d, text: "Mover `sendInvoice` a otro archivo" }
+  correct: a
+  explanation: "Ese 3 es un número mágico: no dice qué significa. Con `OrderStatus.SHIPPED`, por ejemplo, el código se explica solo y el valor queda definido en un único lugar."
+
+- id: dis-ocp-001
+  topic: diseno
+  difficulty: intermedio
+  type: code
+  language: python
+  prompt: "¿Qué principio incumple este diseño cuando se añaden formatos con frecuencia?"
+  code: |
+    def export(report, kind):
+        if kind == "pdf":
+            return to_pdf(report)
+        if kind == "csv":
+            return to_csv(report)
+        if kind == "xml":
+            return to_xml(report)
+  options:
+    - { id: a, text: "Sustitución de Liskov" }
+    - { id: b, text: "Abierto/cerrado" }
+    - { id: c, text: "Segregación de interfaces" }
+    - { id: d, text: "Ley de Demeter" }
+  correct: b
+  explanation: "Cada formato nuevo obliga a modificar esta función. El principio abierto/cerrado propone poder ampliar el comportamiento sin tocar el código existente, por ejemplo registrando un exportador por formato."
+
+- id: dis-inyeccion-001
+  topic: diseno
+  difficulty: intermedio
+  type: code
+  language: python
+  prompt: "¿Qué ventaja principal aporta recibir `clock` como parámetro?"
+  code: |
+    class Report:
+        def __init__(self, clock):
+            self.clock = clock
+
+        def title(self):
+            return f"Informe de {self.clock.today()}"
+  options:
+    - { id: a, text: "Que el código se ejecuta más rápido" }
+    - { id: b, text: "Que un test puede usar un reloj falso con una fecha fija" }
+    - { id: c, text: "Que `Report` deja de necesitar un constructor" }
+    - { id: d, text: "Que la fecha se guarda en una caché automáticamente" }
+  correct: b
+  explanation: "Es inyección de dependencias: `Report` no crea su reloj, sino que lo recibe. Eso permite sustituirlo en los tests y obtener resultados deterministas."
+
+- id: dis-composicion-001
+  topic: diseno
+  difficulty: intermedio
+  type: concept
+  prompt: "¿Por qué suele preferirse la composición a la herencia?"
+  options:
+    - { id: a, text: "Porque reduce el acoplamiento y permite cambiar partes con más facilidad" }
+    - { id: b, text: "Porque la herencia no está disponible en la mayoría de lenguajes" }
+    - { id: c, text: "Porque la composición siempre se ejecuta más rápido" }
+    - { id: d, text: "Porque la herencia impide escribir tests unitarios" }
+  correct: a
+  explanation: "La herencia ata la subclase a los detalles de su padre. Con composición, un objeto delega en otros a través de su interfaz, y esas piezas se pueden sustituir. La herencia sigue siendo útil para relaciones claras de tipo \"es un\"."
+
+- id: dis-liskov-001
+  topic: diseno
+  difficulty: avanzado
+  type: code
+  language: python
+  prompt: "¿Qué principio incumple esta jerarquía?"
+  code: |
+    class Rectangle:
+        def set_size(self, width, height):
+            self.width, self.height = width, height
+
+    class Square(Rectangle):
+        def set_size(self, width, height):
+            if width != height:
+                raise ValueError("Un cuadrado tiene lados iguales")
+            super().set_size(width, height)
+  options:
+    - { id: a, text: "Sustitución de Liskov" }
+    - { id: b, text: "Inversión de dependencias" }
+    - { id: c, text: "Responsabilidad única" }
+    - { id: d, text: "Segregación de interfaces" }
+  correct: a
+  explanation: "Un código que funciona con `Rectangle` puede romperse al recibir `Square`, porque este añade una restricción que su clase padre no tiene. Una subclase debe poder sustituir a su padre sin alterar lo que se espera de él."
+
+- id: dis-dip-001
+  topic: diseno
+  difficulty: avanzado
+  type: concept
+  prompt: "¿Qué propone el principio de inversión de dependencias?"
+  options:
+    - { id: a, text: "Que los módulos de bajo nivel controlen a los de alto nivel" }
+    - { id: b, text: "Que las dependencias se instalen siempre en su última versión" }
+    - { id: c, text: "Que los módulos de alto y bajo nivel dependan de abstracciones" }
+    - { id: d, text: "Que cada clase cree por sí misma todas sus dependencias" }
+  correct: c
+  explanation: "La lógica de negocio no debería depender de detalles como una base de datos concreta. Ambas partes dependen de una interfaz, y esa interfaz la define normalmente quien la necesita."
+
+- id: dis-strategy-001
+  topic: diseno
+  difficulty: avanzado
+  type: concept
+  prompt: "¿Qué problema resuelve el patrón Strategy?"
+  options:
+    - { id: a, text: "Garantizar que una clase tenga una única instancia" }
+    - { id: b, text: "Intercambiar un algoritmo en ejecución sin cambiar a quien lo usa" }
+    - { id: c, text: "Notificar a varios objetos cuando cambia un estado" }
+    - { id: d, text: "Adaptar una interfaz existente a la que espera un cliente" }
+  correct: b
+  explanation: "Strategy encapsula cada algoritmo tras una interfaz común, y quien lo usa recibe el que corresponda. Las demás opciones describen los patrones Singleton, Observer y Adapter."

@@ -2,7 +2,7 @@
 
 Plan de implementación de [requirements.md](requirements.md).
 
-**Estado:** a la espera. Las decisiones están cerradas y el desarrollo no empieza hasta recibir la orden expresa de Oscar.
+**Estado:** en desarrollo. Las fases 0 y 1 están terminadas.
 
 ## Stack
 
@@ -32,8 +32,10 @@ options:
   - { id: b, text: "..." }
 correct: b
 explanation: ...
-verify: true          # CI ejecuta el código y comprueba la respuesta
+verify: output        # output | error: CI ejecuta el código y comprueba la respuesta
 ```
+
+Con `verify: output`, la salida del fragmento debe coincidir exactamente con el texto de la opción correcta. Con `verify: error`, el fragmento debe fallar y el error debe contener ese texto. En SQL, cada fila es una línea y sus columnas se separan con `|`.
 
 ## Fases
 
@@ -52,5 +54,5 @@ La fase 6 puede avanzar en paralelo desde el final de la fase 1.
 ## Riesgos
 
 - **Contenido:** es el mayor trabajo del proyecto. Redactar 150 preguntas con buenas opciones incorrectas y explicaciones cuesta más que el código.
-- **Revisión:** Claude redacta los borradores y Oscar los revisa. CI solo verifica las preguntas sobre el resultado de un fragmento, así que las conceptuales dependen de esa revisión.
+- **Revisión:** Claude redacta las preguntas y no hay revisión humana. CI solo verifica el resultado de los fragmentos ejecutables, así que el contenido de las conceptuales depende de la revisión de Claude y puede contener errores que nadie más haya detectado.
 - **Borrado de datos en Safari:** puede eliminar los datos de un sitio tras 7 días de uso sin visitarlo. Las apps instaladas en la pantalla de inicio quedan exentas, y exportar el progreso queda para después del MVP.

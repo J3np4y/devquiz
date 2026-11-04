@@ -1,0 +1,157 @@
+- id: test-assert-001
+  topic: testing
+  difficulty: principiante
+  type: code
+  language: python
+  prompt: "¿Qué error produce este código al ejecutar el test?"
+  code: |
+    def add(a, b):
+        return a - b
+
+    def test_add():
+        assert add(2, 2) == 4
+
+    test_add()
+  options:
+    - { id: a, text: "AssertionError" }
+    - { id: b, text: "TypeError" }
+    - { id: c, text: "NameError" }
+    - { id: d, text: "ValueError" }
+  correct: a
+  explanation: "`add` resta en lugar de sumar, así que devuelve 0. La comprobación de `assert` no se cumple y lanza `AssertionError`: el test ha detectado el error."
+  verify: error
+
+- id: test-aaa-001
+  topic: testing
+  difficulty: principiante
+  type: concept
+  prompt: "¿Qué describe el patrón Arrange-Act-Assert?"
+  options:
+    - { id: a, text: "El orden en que deben ejecutarse los distintos tests" }
+    - { id: b, text: "La estructura de un test: preparar, ejecutar y comprobar" }
+    - { id: c, text: "Los niveles de la pirámide de tests" }
+    - { id: d, text: "Los pasos para desplegar tras pasar los tests" }
+  correct: b
+  explanation: "Un test legible prepara los datos (Arrange), ejecuta el comportamiento que se prueba (Act) y comprueba el resultado (Assert)."
+
+- id: test-unitario-001
+  topic: testing
+  difficulty: principiante
+  type: concept
+  prompt: "¿Qué caracteriza a un test unitario frente a uno de integración?"
+  options:
+    - { id: a, text: "Prueba una pequeña unidad de código de forma aislada" }
+    - { id: b, text: "Prueba varios componentes reales trabajando juntos" }
+    - { id: c, text: "Se ejecuta solo en el entorno de producción" }
+    - { id: d, text: "Lo escribe un equipo distinto al de desarrollo" }
+  correct: a
+  explanation: "El test unitario comprueba una parte pequeña sin depender de otras, por lo que es rápido y localiza bien los fallos. El de integración comprueba que varias partes funcionan juntas."
+
+- id: test-mock-001
+  topic: testing
+  difficulty: intermedio
+  type: code
+  language: python
+  prompt: "¿Qué imprime este código?"
+  code: |
+    from unittest.mock import Mock
+
+    send = Mock(return_value=True)
+    result = send("hola")
+    print(result, send.call_count)
+  options:
+    - { id: a, text: "True 1" }
+    - { id: b, text: "hola 1" }
+    - { id: c, text: "True 0" }
+    - { id: d, text: "None 1" }
+  correct: a
+  explanation: "El mock devuelve el valor configurado en `return_value` y registra sus llamadas, por eso `call_count` vale 1. Así se puede comprobar una interacción sin ejecutar el código real."
+  verify: output
+
+- id: test-flaky-001
+  topic: testing
+  difficulty: intermedio
+  type: code
+  language: python
+  prompt: "¿Cuál es el problema principal de este test?"
+  code: |
+    import random
+
+    def test_roll():
+        assert random.randint(1, 6) != 6
+  options:
+    - { id: a, text: "No contiene ninguna comprobación" }
+    - { id: b, text: "Puede fallar o pasar sin que cambie el código" }
+    - { id: c, text: "Tarda demasiado en ejecutarse" }
+    - { id: d, text: "Depende de una base de datos externa" }
+  correct: b
+  explanation: "Es un test inestable (flaky): su resultado depende del azar. Falla aproximadamente una de cada seis veces y genera desconfianza en toda la suite. Se corrige fijando o inyectando la fuente de aleatoriedad."
+
+- id: test-doble-001
+  topic: testing
+  difficulty: intermedio
+  type: concept
+  prompt: "¿Qué diferencia a un mock de un stub?"
+  options:
+    - { id: a, text: "El stub da respuestas fijas y el mock permite comprobar cómo se le llamó" }
+    - { id: b, text: "El mock da respuestas fijas y el stub permite comprobar cómo se le llamó" }
+    - { id: c, text: "El stub se usa en producción y el mock se usa solo en los tests" }
+    - { id: d, text: "El mock usa el código real y el stub lo sustituye por uno falso" }
+  correct: a
+  explanation: "Un stub proporciona datos para que el test pueda avanzar. Un mock verifica además la interacción, como qué métodos se llamaron y con qué argumentos."
+
+- id: test-patch-001
+  topic: testing
+  difficulty: avanzado
+  type: code
+  language: python
+  prompt: "¿Qué imprime este código?"
+  code: |
+    import math
+    from math import sqrt
+    from unittest.mock import patch
+
+    with patch("math.sqrt", return_value=0):
+        print(math.sqrt(4), sqrt(4))
+  options:
+    - { id: a, text: "0 0" }
+    - { id: b, text: "0 2.0" }
+    - { id: c, text: "2.0 0" }
+    - { id: d, text: "2.0 2.0" }
+  correct: b
+  explanation: "`patch` sustituye el atributo `sqrt` del módulo `math`. El nombre importado con `from math import sqrt` sigue apuntando a la función original. Por eso se debe parchear el nombre allí donde se usa."
+  verify: output
+
+- id: test-mutacion-001
+  topic: testing
+  difficulty: avanzado
+  type: concept
+  prompt: "¿Qué mide el testing de mutación?"
+  options:
+    - { id: a, text: "Qué líneas de código se ejecutan durante los tests" }
+    - { id: b, text: "Si los tests detectan cambios pequeños introducidos en el código" }
+    - { id: c, text: "Cuánto tiempo tarda en ejecutarse la suite de tests" }
+    - { id: d, text: "Si los tests siguen pasando en distintos sistemas operativos" }
+  correct: b
+  explanation: "La herramienta introduce pequeños errores en el código, llamados mutantes, y comprueba si algún test falla. Evalúa la capacidad real de detección, mientras que la cobertura solo indica qué se ejecutó."
+
+- id: test-propiedades-001
+  topic: testing
+  difficulty: avanzado
+  type: code
+  language: python
+  prompt: "¿Qué tipo de test es este?"
+  code: |
+    from hypothesis import given
+    from hypothesis.strategies import integers, lists
+
+    @given(lists(integers()))
+    def test_sort_is_idempotent(items):
+        assert sorted(sorted(items)) == sorted(items)
+  options:
+    - { id: a, text: "Un test basado en propiedades" }
+    - { id: b, text: "Un test de instantánea" }
+    - { id: c, text: "Un test de carga" }
+    - { id: d, text: "Un test de contrato" }
+  correct: a
+  explanation: "En lugar de ejemplos concretos, define una regla que debe cumplirse siempre, y la herramienta genera muchas entradas para intentar incumplirla."

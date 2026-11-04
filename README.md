@@ -23,3 +23,11 @@ npm run check
 ```
 
 El despliegue a GitHub Pages es automático al subir a `main`.
+
+## Preguntas
+
+Las preguntas están en `content/questions/`, en un archivo YAML por tema. El formato se describe en el [plan](plan.md). Para validarlas y ejecutar los fragmentos verificables (requiere Python):
+
+```bash
+npm run content:check
+```

@@ -1,0 +1,167 @@
+- id: js-tipos-001
+  topic: javascript
+  difficulty: principiante
+  type: code
+  language: javascript
+  prompt: "¿Qué imprime este código?"
+  code: |
+    console.log(typeof null);
+  options:
+    - { id: a, text: "null" }
+    - { id: b, text: "undefined" }
+    - { id: c, text: "object" }
+    - { id: d, text: "number" }
+  correct: c
+  explanation: "`typeof null` devuelve \"object\". Es un error histórico del lenguaje que se mantiene por compatibilidad."
+  verify: output
+
+- id: js-igualdad-001
+  topic: javascript
+  difficulty: principiante
+  type: code
+  language: javascript
+  prompt: "¿Qué imprime este código?"
+  code: |
+    console.log(1 == '1');
+    console.log(1 === '1');
+  options:
+    - { id: a, text: "true\ntrue" }
+    - { id: b, text: "true\nfalse" }
+    - { id: c, text: "false\ntrue" }
+    - { id: d, text: "false\nfalse" }
+  correct: b
+  explanation: "`==` convierte los tipos antes de comparar, así que el texto '1' pasa a ser el número 1. `===` no convierte y compara también el tipo."
+  verify: output
+
+- id: js-const-001
+  topic: javascript
+  difficulty: principiante
+  type: concept
+  prompt: "¿Qué impide `const` al declarar un objeto?"
+  options:
+    - { id: a, text: "Añadir propiedades nuevas al objeto" }
+    - { id: b, text: "Modificar las propiedades existentes" }
+    - { id: c, text: "Reasignar la variable a otro valor" }
+    - { id: d, text: "Pasar el objeto a una función" }
+  correct: c
+  explanation: "`const` solo protege la variable frente a la reasignación. El objeto sigue siendo mutable; para impedir cambios en él existe `Object.freeze`."
+
+- id: js-closures-001
+  topic: javascript
+  difficulty: intermedio
+  type: code
+  language: javascript
+  prompt: "¿Qué imprime este código?"
+  code: |
+    for (var i = 0; i < 3; i++) {
+      setTimeout(() => console.log(i), 0);
+    }
+  options:
+    - { id: a, text: "0\n1\n2" }
+    - { id: b, text: "2\n2\n2" }
+    - { id: c, text: "3\n3\n3" }
+    - { id: d, text: "undefined\nundefined\nundefined" }
+  correct: c
+  explanation: "`var` crea una sola variable compartida por todo el bucle. Los callbacks se ejecutan cuando este ya ha terminado, con `i` valiendo 3. Con `let` habría una variable por iteración y se imprimiría 0, 1 y 2."
+  verify: output
+
+- id: js-this-001
+  topic: javascript
+  difficulty: intermedio
+  type: code
+  language: javascript
+  prompt: "¿Qué imprime este código?"
+  code: |
+    const user = {
+      name: 'Ana',
+      getName() {
+        return this?.name;
+      },
+    };
+    const getName = user.getName;
+    console.log(getName());
+  options:
+    - { id: a, text: "Ana" }
+    - { id: b, text: "undefined" }
+    - { id: c, text: "null" }
+    - { id: d, text: "getName" }
+  correct: b
+  explanation: "`this` depende de cómo se llama la función, no de dónde se definió. Al llamarla sin `user.` delante, `this` ya no es `user`, y por eso `name` no se encuentra."
+  verify: output
+
+- id: js-map-001
+  topic: javascript
+  difficulty: intermedio
+  type: code
+  language: javascript
+  prompt: "¿Qué imprime este código?"
+  code: |
+    console.log(['1', '2', '3'].map(parseInt).join());
+  options:
+    - { id: a, text: "1,2,3" }
+    - { id: b, text: "1,NaN,NaN" }
+    - { id: c, text: "NaN,NaN,NaN" }
+    - { id: d, text: "1,NaN,3" }
+  correct: b
+  explanation: "`map` pasa valor e índice, y `parseInt` interpreta el segundo argumento como base. Se ejecuta `parseInt('1', 0)`, que da 1; `parseInt('2', 1)`, con una base inválida; y `parseInt('3', 2)`, porque 3 no es un dígito binario."
+  verify: output
+
+- id: js-eventloop-001
+  topic: javascript
+  difficulty: avanzado
+  type: code
+  language: javascript
+  prompt: "¿Qué imprime este código?"
+  code: |
+    console.log('A');
+    setTimeout(() => console.log('B'), 0);
+    Promise.resolve().then(() => console.log('C'));
+    console.log('D');
+  options:
+    - { id: a, text: "A\nB\nC\nD" }
+    - { id: b, text: "A\nD\nB\nC" }
+    - { id: c, text: "A\nC\nD\nB" }
+    - { id: d, text: "A\nD\nC\nB" }
+  correct: d
+  explanation: "Primero termina el código síncrono (A, D). Después se vacían las microtareas, como las promesas (C), y por último se ejecutan las tareas, como los temporizadores (B)."
+  verify: output
+
+- id: js-async-001
+  topic: javascript
+  difficulty: avanzado
+  type: code
+  language: javascript
+  prompt: "¿Qué imprime este código?"
+  code: |
+    const load = (n) => Promise.resolve(n);
+
+    async function main() {
+      const results = [];
+      [1, 2].forEach(async (n) => {
+        results.push(await load(n));
+      });
+      console.log(results.length);
+    }
+
+    main();
+  options:
+    - { id: a, text: "0" }
+    - { id: b, text: "1" }
+    - { id: c, text: "2" }
+    - { id: d, text: "undefined" }
+  correct: a
+  explanation: "`forEach` no espera a las funciones asíncronas, así que `console.log` se ejecuta antes de que ningún `await` continúe. Para esperarlas se usa `for...of` o `Promise.all`."
+  verify: output
+
+- id: js-weakmap-001
+  topic: javascript
+  difficulty: avanzado
+  type: concept
+  prompt: "¿Qué ventaja tiene `WeakMap` frente a `Map` al asociar datos a objetos?"
+  options:
+    - { id: a, text: "Sus búsquedas son más rápidas" }
+    - { id: b, text: "No impide que sus claves se liberen de memoria" }
+    - { id: c, text: "Permite recorrer sus entradas en orden" }
+    - { id: d, text: "Admite cualquier valor primitivo como clave" }
+  correct: b
+  explanation: "`WeakMap` guarda referencias débiles a sus claves: si un objeto ya no se usa en otro sitio, puede liberarse junto con su entrada. A cambio, no se puede recorrer."
