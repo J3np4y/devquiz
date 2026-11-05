@@ -375,3 +375,25 @@
     - { id: d, text: "Tener un único nodo sin aristas de salida" }
   correct: b
   explanation: "El orden topológico coloca cada nodo antes de aquellos que dependen de él. Con un ciclo, ningún nodo del ciclo podría ir primero. Se usa, por ejemplo, para ordenar tareas con dependencias."
+
+- id: fund-vf-pila-001
+  topic: fundamentos
+  difficulty: principiante
+  type: truefalse
+  prompt: "Una pila sigue el orden LIFO: el último elemento en entrar es el primero en salir."
+  options:
+    - { id: a, text: "Verdadero" }
+    - { id: b, text: "Falso" }
+  correct: a
+  explanation: "Es lo que la distingue de una cola, que sigue el orden FIFO: el primero en entrar es el primero en salir."
+
+- id: fund-vf-busqueda-binaria-001
+  topic: fundamentos
+  difficulty: intermedio
+  type: truefalse
+  prompt: "La búsqueda binaria funciona sobre cualquier lista, esté o no ordenada."
+  options:
+    - { id: a, text: "Verdadero" }
+    - { id: b, text: "Falso" }
+  correct: b
+  explanation: "Descarta la mitad de los elementos en cada paso comparando con el central, lo que solo es válido si la lista está ordenada."

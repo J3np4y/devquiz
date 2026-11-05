@@ -370,3 +370,25 @@
     - { id: d, text: "Que no detectan ningún cambio en la salida del programa" }
   correct: b
   explanation: "Al fallar, actualizar la instantánea es muy fácil, y puede convertirse en un gesto automático. Además, si es muy grande, nadie la revisa con atención y un error puede darse por bueno."
+
+- id: test-vf-prueba-unitaria-001
+  topic: testing
+  difficulty: principiante
+  type: truefalse
+  prompt: "Una prueba unitaria comprueba una pequeña parte del código de forma aislada."
+  options:
+    - { id: a, text: "Verdadero" }
+    - { id: b, text: "Falso" }
+  correct: a
+  explanation: "Al aislarla de la red, la base de datos y otros módulos, la prueba es rápida y, si falla, señala con precisión dónde está el problema."
+
+- id: test-vf-cobertura-001
+  topic: testing
+  difficulty: intermedio
+  type: truefalse
+  prompt: "Una cobertura de código del 100 % garantiza que el programa no tiene errores."
+  options:
+    - { id: a, text: "Verdadero" }
+    - { id: b, text: "Falso" }
+  correct: b
+  explanation: "La cobertura solo indica qué líneas se han ejecutado, no que se haya comprobado su resultado ni que se hayan probado todos los casos."

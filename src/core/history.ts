@@ -13,13 +13,48 @@ const chronologicalAnswers = (sessions: readonly Session[]): AnswerEvent[] =>
     )
     .sort((a, b) => a.at - b.at);
 
-/** Momento en que se respondió por última vez cada pregunta. */
-export function lastAnsweredAt(sessions: readonly Session[]): Map<string, number> {
-  const seen = new Map<string, number>();
-  for (const answer of chronologicalAnswers(sessions)) {
-    seen.set(answer.questionId, answer.at);
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** Días hasta volver a ver una pregunta, según cuántas veces seguidas se ha acertado. */
+const REVIEW_INTERVALS_DAYS = [1, 3, 7, 14, 30, 60];
+
+/**
+ * Repetición espaciada: cuándo conviene volver a ver cada pregunta respondida.
+ * Cada acierto seguido aleja la fecha, y un fallo hace que toque de inmediato.
+ */
+export function reviewDueAt(sessions: readonly Session[]): Map<string, number> {
+  const streaks = new Map<string, number>();
+  const due = new Map<string, number>();
+
+  for (const { questionId, correct, at } of chronologicalAnswers(sessions)) {
+    const streak = correct ? (streaks.get(questionId) ?? 0) + 1 : 0;
+    streaks.set(questionId, streak);
+    const days =
+      streak === 0 ? 0 : (REVIEW_INTERVALS_DAYS[Math.min(streak, REVIEW_INTERVALS_DAYS.length) - 1] as number);
+    due.set(questionId, at + days * DAY_MS);
   }
-  return seen;
+
+  return due;
+}
+
+const localDay = (date: Date) => `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+
+/**
+ * Días seguidos con alguna respuesta, en la hora local y contando el repaso.
+ * Si hoy aún no se ha respondido nada, la racha de ayer sigue viva.
+ */
+export function dailyStreak(sessions: readonly Session[], now: number): number {
+  const days = new Set(chronologicalAnswers(sessions).map((answer) => localDay(new Date(answer.at))));
+
+  const cursor = new Date(now);
+  if (!days.has(localDay(cursor))) cursor.setDate(cursor.getDate() - 1);
+
+  let streak = 0;
+  while (days.has(localDay(cursor))) {
+    streak += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return streak;
 }
 
 export interface FailedQuestion {

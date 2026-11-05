@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { failedQuestions } from './core/history.ts';
-import { selectFiltered, selectMixed, selectReview } from './core/selection.ts';
+import { CHALLENGE_SIZE, selectFiltered, selectMixed, selectReview } from './core/selection.ts';
 import {
   activeSession,
   advance,
@@ -8,6 +8,7 @@ import {
   createSession,
   currentQuestion,
   discardActive,
+  reconcileActive,
   startSession,
 } from './core/session.ts';
 import {
@@ -16,7 +17,7 @@ import {
   saveShortcutsEnabled,
   type StorageLike,
 } from './core/storage.ts';
-import type { ChallengeMode, Question } from './core/types.ts';
+import type { ChallengeFilters, ChallengeMode, Progress, Question } from './core/types.ts';
 import { Home } from './ui/Home.tsx';
 import type { AppQuestion } from './ui/labels.ts';
 import { Quiz } from './ui/Quiz.tsx';
@@ -77,7 +78,8 @@ export function App({ bank, storage }: AppProps) {
     navigate(CHALLENGE);
   };
 
-  const startReview = () => start('review', selectReview(bank, progress.sessions));
+  const startReview = (filters: ChallengeFilters = {}) =>
+    start('review', selectReview(bank, progress.sessions, CHALLENGE_SIZE, filters));
 
   if (inChallenge) {
     return (
@@ -111,7 +113,7 @@ export function App({ bank, storage }: AppProps) {
         questionsById={questionsById}
         failedCount={failedQuestions(progress.sessions, bank).length}
         saveFailed={saveFailed}
-        onReview={startReview}
+        onReview={() => startReview()}
         onHome={() => navigate(HOME)}
       />
     );
@@ -130,6 +132,7 @@ export function App({ bank, storage }: AppProps) {
       onResume={() => navigate(CHALLENGE)}
       onDiscard={() => update((current) => discardActive(current, Date.now()))}
       onReset={reset}
+      onImport={(imported: Progress) => update(() => reconcileActive(imported, bank, Date.now()))}
     />
   );
 }

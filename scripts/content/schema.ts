@@ -20,6 +20,12 @@ const ORDER_DEPENDENT_OPTION =
 
 const POSITIONAL_REFERENCE = /(primera|segunda|tercera|cuarta|última) opción|\bopción [a-d]\b/i;
 
+/** Las preguntas de verdadero o falso usan siempre estas opciones, en este orden. */
+export const TRUE_FALSE_OPTIONS = [
+  { id: 'a', text: 'Verdadero' },
+  { id: 'b', text: 'Falso' },
+];
+
 const nonBlank = z.string().refine((value) => value.trim().length > 0, 'no puede estar vacío');
 
 const optionSchema = z.strictObject({
@@ -35,7 +41,7 @@ export const questionSchema = z
     id: z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, 'debe estar en kebab-case'),
     topic: z.enum(TOPICS),
     difficulty: z.enum(DIFFICULTIES),
-    type: z.enum(['concept', 'code']),
+    type: z.enum(['concept', 'code', 'truefalse']),
     language: z.enum(LANGUAGES).optional(),
     prompt: nonBlank,
     code: nonBlank.optional(),
@@ -70,9 +76,16 @@ export const questionSchema = z
       if (!question.code) issue('code', 'es obligatorio en preguntas de tipo code');
       if (!question.language) issue('language', 'es obligatorio en preguntas de tipo code');
     } else {
-      if (question.code) issue('code', 'no se admite en preguntas de tipo concept');
-      if (question.language) issue('language', 'no se admite en preguntas de tipo concept');
-      if (question.verify) issue('verify', 'no se admite en preguntas de tipo concept');
+      if (question.code) issue('code', `no se admite en preguntas de tipo ${question.type}`);
+      if (question.language) issue('language', `no se admite en preguntas de tipo ${question.type}`);
+      if (question.verify) issue('verify', `no se admite en preguntas de tipo ${question.type}`);
+    }
+
+    if (
+      question.type === 'truefalse' &&
+      JSON.stringify(question.options) !== JSON.stringify(TRUE_FALSE_OPTIONS)
+    ) {
+      issue('options', 'deben ser "a: Verdadero" y "b: Falso", en este orden');
     }
   });
 

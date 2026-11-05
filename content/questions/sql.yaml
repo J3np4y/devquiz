@@ -409,3 +409,25 @@
     - { id: d, text: "Cualquier conflicto entre transacciones" }
   correct: a
   explanation: "READ COMMITTED garantiza que solo se leen datos confirmados. Las lecturas no repetibles y las filas fantasma requieren, según el estándar, niveles más altos."
+
+- id: sql-vf-igual-null-001
+  topic: sql
+  difficulty: principiante
+  type: truefalse
+  prompt: "La condición `columna = NULL` encuentra las filas en las que la columna es nula."
+  options:
+    - { id: a, text: "Verdadero" }
+    - { id: b, text: "Falso" }
+  correct: b
+  explanation: "Comparar con `NULL` da un resultado desconocido, nunca verdadero, así que no selecciona ninguna fila. Hay que usar `columna IS NULL`."
+
+- id: sql-vf-where-having-001
+  topic: sql
+  difficulty: intermedio
+  type: truefalse
+  prompt: "`WHERE` filtra filas antes de agrupar, y `HAVING` filtra los grupos después de agrupar."
+  options:
+    - { id: a, text: "Verdadero" }
+    - { id: b, text: "Falso" }
+  correct: a
+  explanation: "Por eso `HAVING` puede usar funciones de agregación como `COUNT(*)`, mientras que `WHERE` no."

@@ -14,9 +14,9 @@ Aplicación web adaptable a móvil para que desarrolladores repasen conocimiento
 - **Contenido inicial:** banco de preguntas preparado y revisado, sin generación mediante IA dentro de la aplicación.
 - **Autoría del banco:** Claude redacta y revisa las preguntas, sin revisión humana previa a su publicación. CI verifica el formato de todas y el resultado de las que ejecutan código.
 - **Tamaño del reto:** hasta 10 preguntas, unos 5 minutos.
-- **Banco inicial:** unas 150 preguntas (7 temas × 3 niveles × 7 preguntas).
-- **Formato de respuesta:** opción múltiple con una única respuesta correcta. El esquema debe poder ampliarse a otros formatos.
-- **Filtros del repaso:** ninguno en el MVP.
+- **Banco:** al menos 7 preguntas por combinación de tema y nivel (7 temas × 3 niveles).
+- **Formato de respuesta:** opción múltiple con una única respuesta correcta, y verdadero o falso. El esquema debe poder ampliarse a otros formatos.
+- **Filtros del repaso:** por tema.
 
 ## Requisitos funcionales del MVP
 
@@ -25,19 +25,20 @@ Aplicación web adaptable a móvil para que desarrolladores repasen conocimiento
 - Ofrecer un reto rápido mixto, con al menos 3 temas distintos y un 30 % de preguntas con código.
 - Permitir filtrar un reto por tema y nivel de dificultad.
 - Si un filtro dispone de menos de 10 preguntas, iniciar el reto con las disponibles y avisarlo. Si no hay ninguna, mostrar un mensaje claro y no iniciar el reto.
-- Priorizar las preguntas no vistas y, después, las vistas hace más tiempo.
-- Incluir un modo para repasar preguntas falladas anteriormente: hasta 10 preguntas, primero las falladas hace más tiempo. Si no hay ninguna, el acceso queda desactivado y se explica el motivo.
-- Mostrar un resumen del progreso: preguntas respondidas, precisión global, precisión por tema y retos completados.
+- Priorizar las preguntas no vistas y, después, las que antes toca repasar según la repetición espaciada: cada acierto seguido aleja la pregunta 1, 3, 7, 14, 30 y hasta 60 días, y un fallo hace que toque de inmediato.
+- Incluir un modo para repasar preguntas falladas anteriormente, de todos los temas o de uno: hasta 10 preguntas, primero las falladas hace más tiempo. Si no hay ninguna, el acceso queda desactivado y se explica el motivo.
+- Mostrar un resumen del progreso: preguntas respondidas, precisión global, precisión por tema, retos completados y racha diaria.
 
 ### Preguntas y respuestas
 
 - Soportar preguntas conceptuales y preguntas sobre qué hace un fragmento de código o cuál es su resultado.
 - Organizar las preguntas por tema y dificultad. El tema es el único eje de filtrado; el lenguaje es un dato del fragmento de código, usado para presentarlo.
 - Incluir tres niveles: principiante, intermedio y avanzado.
-- Mostrar opciones de respuesta en orden aleatorio y permitir responder sin límite de tiempo.
+- Mostrar opciones de respuesta en orden aleatorio, salvo «Verdadero» y «Falso», que van siempre en ese orden, y permitir responder sin límite de tiempo.
 - Una respuesta dada no se puede cambiar.
 - Después de cada respuesta, indicar si es correcta y mostrar una explicación breve.
 - Permitir avanzar por el reto y salir de él.
+- Ofrecer, tras responder y en la revisión, un enlace para reportar un error en la pregunta. El enlace abre un aviso en GitHub con el identificador de la pregunta, y no se envía nada hasta confirmarlo allí.
 
 ### Salida y reanudación
 
@@ -55,11 +56,13 @@ Aplicación web adaptable a móvil para que desarrolladores repasen conocimiento
 
 - **Precisión:** aciertos / preguntas respondidas.
 - Las preguntas respondidas, la precisión y los retos completados contabilizan solo los retos normales. El repaso no cuenta, porque repite preguntas elegidas por haberse fallado.
+- **Racha diaria:** días seguidos con alguna respuesta, en la hora local y contando el repaso. Si hoy aún no se ha respondido, la racha de ayer sigue viva.
 
 ### Progreso y privacidad
 
 - Persistir localmente las sesiones, respuestas y preguntas falladas. Las métricas se calculan a partir de esos datos.
 - Permitir reiniciar el progreso guardado, previa confirmación.
+- Permitir exportar el progreso a un archivo e importarlo. Un archivo no válido se rechaza sin cambiar nada, y reemplazar un progreso existente exige confirmación.
 - Versionar el formato de los datos guardados y migrarlos al cambiar de versión.
 - Seguir funcionando si los datos están corruptos o el almacenamiento no está disponible, avisando de que el progreso no se guardará.
 - Ignorar sin error el historial de preguntas que ya no existan en el banco.
@@ -122,11 +125,7 @@ Reglas de contenido:
 - Rankings, competición o publicación de preguntas por usuarios.
 - Un catálogo exhaustivo de preguntas; el banco se ampliará gradualmente.
 
-## Ideas para después del MVP
+## Ideas para más adelante
 
-- Repetición espaciada.
-- Racha diaria.
-- Exportar e importar el progreso.
-- Más formatos de respuesta.
-- Enlace para reportar preguntas erróneas.
-- Filtros en el repaso.
+- Más formatos de respuesta, como varias respuestas correctas.
+- Filtrar el repaso también por nivel.

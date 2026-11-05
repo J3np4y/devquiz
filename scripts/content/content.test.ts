@@ -184,3 +184,34 @@ describe('cobertura', () => {
     expect(checkCoverage(bank(3, 'concept'), 3)).toContain('javascript: 0 % con código, mínimo 40 %');
   });
 });
+
+describe('preguntas de verdadero o falso', () => {
+  const trueFalse = {
+    ...concept,
+    type: 'truefalse',
+    options: [
+      { id: 'a', text: 'Verdadero' },
+      { id: 'b', text: 'Falso' },
+    ],
+  };
+
+  it('acepta una pregunta bien formada', () => {
+    expect(parseOne(trueFalse).errors).toEqual([]);
+  });
+
+  it.each([
+    ['con otras opciones', { options: concept.options }],
+    [
+      'con las opciones al revés',
+      {
+        options: [
+          { id: 'a', text: 'Falso' },
+          { id: 'b', text: 'Verdadero' },
+        ],
+      },
+    ],
+    ['con código', { code: 'x', language: 'python' }],
+  ])('rechaza una pregunta %s', (_name, change) => {
+    expect(parseOne({ ...trueFalse, ...change }).errors.length).toBeGreaterThan(0);
+  });
+});

@@ -16,11 +16,27 @@ export function RichText({ text }: { text: string }) {
   );
 }
 
+const REPOSITORY = 'https://github.com/J3np4y/devquiz';
+
+/** Abre un aviso en GitHub con la pregunta identificada. No se envía nada hasta confirmarlo allí. */
+export function ReportLink({ question }: { question: AppQuestion }) {
+  const params = new URLSearchParams({
+    title: `Error en la pregunta ${question.id}`,
+    body: `Pregunta: ${question.id}\n\nQué está mal:\n`,
+  });
+  return (
+    <a className="report-link" href={`${REPOSITORY}/issues/new?${params}`} target="_blank" rel="noreferrer">
+      Reportar un error en esta pregunta
+    </a>
+  );
+}
+
 export function QuestionTags({ question }: { question: AppQuestion }) {
   return (
     <p className="tags">
       <span>{TOPIC_LABELS[question.topic]}</span>
       <span>{DIFFICULTY_LABELS[question.difficulty]}</span>
+      {question.type === 'truefalse' && <span>Verdadero o falso</span>}
     </p>
   );
 }

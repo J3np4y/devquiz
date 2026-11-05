@@ -390,3 +390,25 @@
     - { id: d, text: "Se reinicia cuando se resuelve la promesa" }
   correct: b
   explanation: "`await` suspende solo esa función y devuelve el control al bucle de eventos. La función continúa más tarde, como microtarea, cuando la promesa se resuelve."
+
+- id: js-vf-typeof-null-001
+  topic: javascript
+  difficulty: principiante
+  type: truefalse
+  prompt: "`typeof null` devuelve la cadena `\"object\"`."
+  options:
+    - { id: a, text: "Verdadero" }
+    - { id: b, text: "Falso" }
+  correct: a
+  explanation: "Es un error histórico de JavaScript que se mantiene por compatibilidad. Para comprobar si un valor es nulo se usa `value === null`."
+
+- id: js-vf-const-objeto-001
+  topic: javascript
+  difficulty: intermedio
+  type: truefalse
+  prompt: "Declarar un objeto con `const` impide modificar sus propiedades."
+  options:
+    - { id: a, text: "Verdadero" }
+    - { id: b, text: "Falso" }
+  correct: b
+  explanation: "`const` solo impide reasignar la variable. Las propiedades del objeto se pueden cambiar, salvo que se congele con `Object.freeze`."

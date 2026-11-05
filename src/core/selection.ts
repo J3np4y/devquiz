@@ -1,4 +1,4 @@
-import { failedQuestions, lastAnsweredAt } from './history.ts';
+import { failedQuestions, reviewDueAt } from './history.ts';
 import type { Bank, ChallengeFilters, Question, Rng, Session } from './types.ts';
 
 export const CHALLENGE_SIZE = 10;
@@ -14,10 +14,10 @@ export function shuffle<T>(items: readonly T[], rng: Rng): T[] {
   return result;
 }
 
-/** Primero las preguntas no vistas y después las vistas hace más tiempo. Los empates son aleatorios. */
+/** Primero las preguntas no vistas y después las que antes toca repasar. Los empates son aleatorios. */
 function byFreshness(bank: Bank, sessions: readonly Session[], rng: Rng): Question[] {
-  const seen = lastAnsweredAt(sessions);
-  return shuffle(bank, rng).sort((a, b) => (seen.get(a.id) ?? -1) - (seen.get(b.id) ?? -1));
+  const due = reviewDueAt(sessions);
+  return shuffle(bank, rng).sort((a, b) => (due.get(a.id) ?? -1) - (due.get(b.id) ?? -1));
 }
 
 export const matchesFilters = (question: Question, filters: ChallengeFilters) =>
@@ -45,11 +45,13 @@ export function selectReview(
   bank: Bank,
   sessions: readonly Session[],
   size = CHALLENGE_SIZE,
+  filters: ChallengeFilters = {},
 ): Question[] {
   const questionsById = new Map(bank.map((question) => [question.id, question]));
   return failedQuestions(sessions, bank)
-    .slice(0, size)
-    .map(({ questionId }) => questionsById.get(questionId) as Question);
+    .map(({ questionId }) => questionsById.get(questionId) as Question)
+    .filter((question) => matchesFilters(question, filters))
+    .slice(0, size);
 }
 
 /**

@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { loadBank } from '../../scripts/content/load.ts';
-import { computeStats, failedQuestions } from './history.ts';
+import { computeStats, dailyStreak, failedQuestions, reviewDueAt } from './history.ts';
 import {
   CHALLENGE_SIZE,
   countMatching,
@@ -29,6 +29,7 @@ import {
   loadProgress,
   loadShortcutsEnabled,
   migrate,
+  parseProgress,
   requestPersistentStorage,
   saveProgress,
   saveShortcutsEnabled,
@@ -589,5 +590,137 @@ describe('shuffle', () => {
     const result = shuffle(items, seeded(3));
     expect(items).toEqual([1, 2, 3, 4]);
     expect([...result].sort()).toEqual([1, 2, 3, 4]);
+  });
+});
+
+describe('repetición espaciada', () => {
+  const DAY = 24 * 60 * 60 * 1000;
+
+  it('cada acierto seguido aleja la fecha, y un fallo la adelanta', () => {
+    const due = (answers: [string, boolean, number][]) => reviewDueAt([answered(answers)]).get('js1');
+
+    expect(due([['js1', true, 0]])).toBe(DAY);
+    expect(due([['js1', true, 0], ['js1', true, 10]])).toBe(10 + 3 * DAY);
+    expect(due([['js1', true, 0], ['js1', true, 10], ['js1', true, 20]])).toBe(20 + 7 * DAY);
+    expect(due([['js1', true, 0], ['js1', false, 10]])).toBe(10);
+    expect(due([['js1', false, 0], ['js1', true, 10]])).toBe(10 + DAY);
+  });
+
+  it('el intervalo deja de crecer al llegar al máximo', () => {
+    const answers = Array.from({ length: 10 }, (_, index): [string, boolean, number] => ['js1', true, index]);
+    expect(reviewDueAt([answered(answers)]).get('js1')).toBe(9 + 60 * DAY);
+  });
+
+  it('prioriza las no vistas y después las que antes toca repasar', () => {
+    const questions = [makeQuestion('nueva'), makeQuestion('dominada'), makeQuestion('fallada')];
+    // «dominada» se vio antes, pero sus aciertos la alejan más que el fallo reciente de «fallada».
+    const sessions = [
+      answered([
+        ['dominada', true, 1],
+        ['dominada', true, 2],
+        ['dominada', true, 3],
+        ['fallada', false, 1000],
+      ]),
+    ];
+
+    for (let seed = 0; seed < 20; seed++) {
+      expect(selectFiltered(questions, {}, sessions, seeded(seed), 1)[0]?.id).toBe('nueva');
+      expect(selectFiltered(questions, {}, sessions, seeded(seed), 2).map((q) => q.id).sort()).toEqual(['fallada', 'nueva']);
+    }
+  });
+});
+
+describe('dailyStreak', () => {
+  const at = (day: number, hour = 12) => new Date(2026, 2, day, hour).getTime();
+  const session = (...days: number[]) => answered(days.map((day): [string, boolean, number] => ['js1', true, at(day)]));
+
+  it('es cero sin respuestas o si la última es de hace más de un día', () => {
+    expect(dailyStreak([], at(10))).toBe(0);
+    expect(dailyStreak([session(7)], at(10))).toBe(0);
+  });
+
+  it('cuenta los días seguidos, sin importar cuántas respuestas haya en cada uno', () => {
+    expect(dailyStreak([session(8, 9, 9, 10, 10)], at(10))).toBe(3);
+    expect(dailyStreak([session(6, 8, 9, 10)], at(10))).toBe(3);
+  });
+
+  it('la racha de ayer sigue viva si hoy aún no se ha respondido', () => {
+    expect(dailyStreak([session(8, 9)], at(10))).toBe(2);
+  });
+
+  it('separa los días según la hora local y cuenta el repaso', () => {
+    const lateAndEarly = answered(
+      [
+        ['js1', true, at(9, 23)],
+        ['js1', false, at(10, 0)],
+      ],
+      'review',
+    );
+    expect(dailyStreak([lateAndEarly], at(10, 1))).toBe(2);
+  });
+
+  it('cruza los cambios de mes', () => {
+    expect(dailyStreak([session(0, 1)], at(1))).toBe(2);
+  });
+});
+
+describe('selectReview con filtro', () => {
+  const questions = [makeQuestion('s1', 'sql'), makeQuestion('s2', 'sql'), makeQuestion('p1', 'python')];
+  const sessions = [
+    answered([
+      ['s1', false, 3],
+      ['p1', false, 1],
+      ['s2', false, 2],
+    ]),
+  ];
+
+  it('devuelve solo los fallos del tema, primero los más antiguos', () => {
+    expect(selectReview(questions, sessions, CHALLENGE_SIZE, { topic: 'sql' }).map((q) => q.id)).toEqual(['s2', 's1']);
+  });
+
+  it('el tamaño se aplica después de filtrar', () => {
+    expect(selectReview(questions, sessions, 1, { topic: 'sql' }).map((q) => q.id)).toEqual(['s2']);
+  });
+
+  it('sin filtro devuelve todos, y con un tema sin fallos ninguno', () => {
+    expect(selectReview(questions, sessions)).toHaveLength(3);
+    expect(selectReview(questions, sessions, CHALLENGE_SIZE, { topic: 'testing' })).toEqual([]);
+  });
+});
+
+describe('parseProgress', () => {
+  it('acepta una copia válida', () => {
+    const progress = { schemaVersion: 1, sessions: [answered([['js1', true, 1]])] };
+    expect(parseProgress(JSON.stringify(progress))).toEqual({ progress, status: 'ok' });
+  });
+
+  it.each([
+    ['texto que no es JSON', '{no es json'],
+    ['un valor que no es un objeto', '[]'],
+    ['sesiones mal formadas', '{"schemaVersion":1,"sessions":[{"id":1}]}'],
+    ['un objeto sin sesiones', '{"schemaVersion":1}'],
+  ])('marca como ilegible %s', (_name, raw) => {
+    expect(parseProgress(raw)).toEqual({ progress: emptyProgress(), status: 'corrupt' });
+  });
+
+  it('distingue los datos de una versión posterior', () => {
+    expect(parseProgress('{"schemaVersion":999,"sessions":[]}').status).toBe('newer');
+  });
+});
+
+describe('preguntas de verdadero o falso', () => {
+  it('conservan el orden de las opciones en cualquier reto', () => {
+    const question: Question = {
+      ...makeQuestion('vf'),
+      type: 'truefalse',
+      options: [
+        { id: 'a', text: 'Verdadero' },
+        { id: 'b', text: 'Falso' },
+      ],
+    };
+    for (let seed = 0; seed < 20; seed++) {
+      const session = createSession({ mode: 'mixed', questions: [question], now: 1, rng: seeded(seed) });
+      expect(session?.questions[0]?.optionOrder).toEqual(['a', 'b']);
+    }
   });
 });
