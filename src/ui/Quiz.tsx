@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import type { Session } from '../core/types.ts';
 import { Icon } from './Icon.tsx';
 import { MODE_LABELS, type AppQuestion } from './labels.ts';
-import { CodeBlock, QuestionTags, RichText, SaveFailedNotice, optionClass } from './QuestionParts.tsx';
+import { CodeBlock, QuestionTags, ReportLink, RichText, SaveFailedNotice, optionClass } from './QuestionParts.tsx';
 
 interface QuizProps {
   session: Session;
@@ -55,7 +55,7 @@ export function Quiz({
       if (!answer && shortcutsEnabled && /^[1-4]$/.test(event.key)) {
         const option = options[Number(event.key) - 1];
         if (option) onAnswer(option.id);
-      } else if (answer && event.key === 'Enter' && !(event.target instanceof HTMLButtonElement)) {
+      } else if (answer && event.key === 'Enter' && !(event.target instanceof Element && event.target.closest('a, button'))) {
         onNext();
       }
     };
@@ -180,6 +180,8 @@ export function Quiz({
           <Icon name="arrow" />
         </button>
       )}
+
+      {answer && <ReportLink question={question} />}
     </main>
   );
 }

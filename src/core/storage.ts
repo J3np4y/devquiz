@@ -97,8 +97,11 @@ export function loadProgress(storage: StorageLike | null): LoadResult {
   } catch {
     return { progress: emptyProgress(), status: 'unavailable' };
   }
-  if (raw === null) return { progress: emptyProgress(), status: 'ok' };
+  return raw === null ? { progress: emptyProgress(), status: 'ok' } : parseProgress(raw);
+}
 
+/** Interpreta el progreso guardado o exportado. Los datos antiguos se migran. */
+export function parseProgress(raw: string): LoadResult {
   try {
     const data: unknown = JSON.parse(raw);
     if (!isRecord(data)) return { progress: emptyProgress(), status: 'corrupt' };

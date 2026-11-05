@@ -270,3 +270,25 @@
     - { id: d, text: "Eliminar la necesidad de escribir tests de integración" }
   correct: b
   explanation: "La lógica de negocio define interfaces, o puertos, y las tecnologías concretas se conectan mediante adaptadores. Así se puede probar sin ellas y sustituirlas con menos impacto."
+
+- id: arq-vf-hexagonal-001
+  topic: arquitectura
+  difficulty: intermedio
+  type: truefalse
+  prompt: "En una arquitectura hexagonal, el dominio no depende de la base de datos ni de otros detalles de infraestructura."
+  options:
+    - { id: a, text: "Verdadero" }
+    - { id: b, text: "Falso" }
+  correct: a
+  explanation: "El dominio define puertos, y los adaptadores de infraestructura los implementan. Las dependencias apuntan siempre hacia el dominio."
+
+- id: arq-vf-cqrs-001
+  topic: arquitectura
+  difficulty: avanzado
+  type: truefalse
+  prompt: "CQRS exige usar bases de datos distintas para las lecturas y las escrituras."
+  options:
+    - { id: a, text: "Verdadero" }
+    - { id: b, text: "Falso" }
+  correct: b
+  explanation: "CQRS separa los modelos de lectura y de escritura. Pueden compartir la misma base de datos: separarla es una decisión adicional, no un requisito."

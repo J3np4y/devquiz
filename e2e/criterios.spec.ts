@@ -4,6 +4,7 @@ import {
   STORAGE_KEY,
   activeSession,
   answer,
+  bank,
   currentQuestion,
   finishChallenge,
   next,
@@ -41,7 +42,8 @@ test.describe('1. Iniciar retos', () => {
     await page.getByLabel('Tema').selectOption('python');
     await expect(page.getByText('El reto tendrá 10 preguntas.')).toBeVisible();
     await page.getByLabel('Nivel').selectOption('intermedio');
-    await expect(page.getByText('Solo hay 7 preguntas con este filtro')).toBeVisible();
+    const available = bank.filter((question) => question.topic === 'python' && question.difficulty === 'intermedio').length;
+    await expect(page.getByText(`Solo hay ${available} preguntas con este filtro`)).toBeVisible();
   });
 });
 

@@ -393,3 +393,25 @@
     - { id: d, text: "Se lanza una excepción por usar una función síncrona" }
   correct: b
   explanation: "`time.sleep` no cede el control, así que ninguna otra corrutina puede avanzar. Dentro de una corrutina se usa `await asyncio.sleep(5)`."
+
+- id: py-vf-tuplas-001
+  topic: python
+  difficulty: principiante
+  type: truefalse
+  prompt: "Las tuplas son inmutables: no se puede reasignar uno de sus elementos."
+  options:
+    - { id: a, text: "Verdadero" }
+    - { id: b, text: "Falso" }
+  correct: a
+  explanation: "Asignar a una posición de una tupla lanza `TypeError`. Eso sí, si un elemento es mutable, como una lista, su contenido puede cambiar."
+
+- id: py-vf-valor-defecto-001
+  topic: python
+  difficulty: intermedio
+  type: truefalse
+  prompt: "El valor por defecto de un parámetro se crea de nuevo en cada llamada a la función."
+  options:
+    - { id: a, text: "Verdadero" }
+    - { id: b, text: "Falso" }
+  correct: b
+  explanation: "Se evalúa una sola vez, al definir la función. Por eso una lista como valor por defecto se comparte entre llamadas, y se suele usar `None` en su lugar."

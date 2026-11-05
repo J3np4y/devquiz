@@ -366,7 +366,8 @@ code {
   width: 100%;
 }
 
-.filters label {
+.filters label,
+.field {
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
@@ -389,7 +390,12 @@ code {
   pointer-events: none;
 }
 
-.filters select {
+.field {
+  width: 100%;
+}
+
+.filters select,
+.field select {
   width: 100%;
   min-height: 46px;
   padding: 0.4rem 2.5rem 0.4rem 0.75rem;
@@ -406,12 +412,31 @@ code {
   transition: border-color 150ms ease;
 }
 
-.filters select:hover {
+.filters select:hover,
+.field select:hover {
   border-color: var(--accent);
 }
 
 .filters .button {
   margin-top: auto;
+}
+
+.progress-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.streak {
+  padding: 0.15rem 0.7rem;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 
 .stats {
@@ -805,6 +830,19 @@ code {
   from {
     transform: translateY(6px);
   }
+}
+
+.report-link {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  min-height: 44px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.report-link:hover {
+  color: var(--text);
 }
 
 /* Sin teclado físico, la pista de las teclas no aporta nada. */

@@ -343,3 +343,25 @@
     - { id: d, text: "Que obliga a usar herencia múltiple" }
   correct: c
   explanation: "Oculta dependencias tras un acceso global y comparte estado entre tests. Suele ser preferible crear una instancia y pasarla mediante inyección de dependencias."
+
+- id: dis-vf-responsabilidad-unica-001
+  topic: diseno
+  difficulty: principiante
+  type: truefalse
+  prompt: "El principio de responsabilidad única dice que una clase debería tener un solo motivo para cambiar."
+  options:
+    - { id: a, text: "Verdadero" }
+    - { id: b, text: "Falso" }
+  correct: a
+  explanation: "Si una clase mezcla, por ejemplo, reglas de negocio y formato de informes, un cambio en cualquiera de ellos puede afectar al otro."
+
+- id: dis-vf-liskov-001
+  topic: diseno
+  difficulty: avanzado
+  type: truefalse
+  prompt: "Según el principio de sustitución de Liskov, una subclase puede exigir condiciones más estrictas que su clase base para aceptar una llamada."
+  options:
+    - { id: a, text: "Verdadero" }
+    - { id: b, text: "Falso" }
+  correct: b
+  explanation: "Una subclase no debe endurecer las precondiciones: el código que usa la clase base dejaría de funcionar al recibir la subclase."

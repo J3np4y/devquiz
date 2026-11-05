@@ -3,7 +3,7 @@ import { sessionResult } from '../core/session.ts';
 import type { Session } from '../core/types.ts';
 import { Icon } from './Icon.tsx';
 import { MODE_LABELS, type AppQuestion } from './labels.ts';
-import { CodeBlock, QuestionTags, RichText, SaveFailedNotice, optionClass } from './QuestionParts.tsx';
+import { CodeBlock, QuestionTags, ReportLink, RichText, SaveFailedNotice, optionClass } from './QuestionParts.tsx';
 
 interface ResultsProps {
   session: Session;
@@ -103,6 +103,7 @@ export function Results({ session, questionsById, failedCount, saveFailed, onRev
               <p>
                 <RichText text={question.explanation} />
               </p>
+              <ReportLink question={question} />
             </li>,
           ];
         })}

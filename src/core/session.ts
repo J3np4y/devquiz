@@ -26,10 +26,11 @@ export function createSession({ mode, questions, now, rng }: NewSession): Sessio
     status: 'active',
     startedAt: now,
     currentIndex: 0,
-    questions: questions.map((question) => ({
-      questionId: question.id,
-      optionOrder: shuffle(question.options.map((option) => option.id), rng),
-    })),
+    questions: questions.map((question) => {
+      const ids = question.options.map((option) => option.id);
+      // «Verdadero» y «Falso» siempre en el mismo orden: barajarlos solo confundiría.
+      return { questionId: question.id, optionOrder: question.type === 'truefalse' ? ids : shuffle(ids, rng) };
+    }),
   };
 }
 
