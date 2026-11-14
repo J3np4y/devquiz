@@ -1,5 +1,5 @@
 import { failedQuestions, reviewDueAt } from './history.ts';
-import type { Bank, ChallengeFilters, Question, Rng, Session } from './types.ts';
+import type { Bank, ChallengeFilters, CurriculumFilters, Question, Rng, Session } from './types.ts';
 
 export const CHALLENGE_SIZE = 10;
 const MIN_MIXED_TOPICS = 3;
@@ -51,6 +51,54 @@ export function selectReview(
   return failedQuestions(sessions, bank)
     .map(({ questionId }) => questionsById.get(questionId) as Question)
     .filter((question) => matchesFilters(question, filters))
+    .slice(0, size);
+}
+
+const matchesCurriculumFilters = (question: Question, filters: CurriculumFilters) => {
+  const curriculum = question.curriculum;
+  if (!curriculum) return false;
+  const block = Math.ceil(curriculum.week / 4) as 1 | 2 | 3;
+  return (
+    (!filters.block || block === filters.block) &&
+    (!filters.week || curriculum.week === filters.week) &&
+    (!filters.category || curriculum.category === filters.category)
+  );
+};
+
+export const countCurriculumMatching = (bank: Bank, filters: CurriculumFilters) =>
+  bank.filter((question) => matchesCurriculumFilters(question, filters)).length;
+
+/** Selecciona preguntas del temario y respeta los filtros de bloque, semana y formato. */
+export function selectCurriculum(
+  bank: Bank,
+  sessions: readonly Session[],
+  rng: Rng,
+  filters: CurriculumFilters = {},
+  size = CHALLENGE_SIZE,
+): Question[] {
+  const matching = bank.filter((question) => matchesCurriculumFilters(question, filters));
+  const available = filters.failedOnly
+    ? new Set(failedQuestions(sessions, matching).map(({ questionId }) => questionId))
+    : undefined;
+  const ranked = byFreshness(matching, sessions, rng).filter((question) => !available || available.has(question.id));
+  return shuffle(ranked.slice(0, size), rng);
+}
+
+/** Hasta `size` preguntas falladas del temario, aplicando los mismos filtros. */
+export function selectCurriculumFailures(
+  bank: Bank,
+  sessions: readonly Session[],
+  filters: CurriculumFilters = {},
+  size = CHALLENGE_SIZE,
+): Question[] {
+  const questionsById = new Map(
+    bank
+      .filter((question) => matchesCurriculumFilters(question, filters))
+      .map((question) => [question.id, question]),
+  );
+  return failedQuestions(sessions, bank)
+    .map(({ questionId }) => questionsById.get(questionId))
+    .filter((question): question is Question => question !== undefined)
     .slice(0, size);
 }
 

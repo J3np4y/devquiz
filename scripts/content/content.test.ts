@@ -1,6 +1,6 @@
 import { stringify } from 'yaml';
 import { describe, expect, it } from 'vitest';
-import { checkCoverage } from './coverage.ts';
+import { checkCoverage, checkCurriculumCoverage } from './coverage.ts';
 import { parseBank } from './load.ts';
 import { DIFFICULTIES, TOPICS, questionSchema, type Question } from './schema.ts';
 import { runSnippet, verifyQuestion } from './verify.ts';
@@ -80,6 +80,50 @@ describe('validador del banco', () => {
     const { errors } = parseOne({ ...concept, ...change });
     expect(errors.length).toBeGreaterThan(0);
     expect(errors.join('\n')).toContain(field);
+  });
+
+  it('acepta preguntas abiertas de entrevista con respuesta orientativa', () => {
+    const interview = {
+      ...concept,
+      id: 'rec-semana-01-entrevista',
+      type: 'open',
+      options: undefined,
+      correct: undefined,
+      modelAnswer: 'Una respuesta razonada.',
+      curriculum: { week: 1, category: 'interview' },
+    };
+    const { questions, errors } = parseOne(interview);
+    expect(errors).toEqual([]);
+    expect(questions[0]?.type).toBe('open');
+  });
+
+  it.each([
+    ['sin respuesta orientativa', { modelAnswer: undefined }, 'modelAnswer'],
+    ['con opciones cerradas', { options: concept.options }, 'options'],
+    ['sin metadatos de Reciclaje', { curriculum: undefined }, 'curriculum'],
+  ])('rechaza una pregunta abierta %s', (_name, change, field) => {
+    const interview = {
+      ...concept,
+      type: 'open',
+      options: undefined,
+      correct: undefined,
+      modelAnswer: 'Una respuesta razonada.',
+      curriculum: { week: 1, category: 'interview' },
+      ...change,
+    };
+    const { errors } = parseOne(interview);
+    expect(errors.join('\n')).toContain(field);
+  });
+
+  it('rechaza preguntas Java con verificación automática no configurada', () => {
+    const question = {
+      ...concept,
+      type: 'code',
+      language: 'java',
+      code: 'class Main {}',
+      verify: 'output',
+    };
+    expect(parseOne(question).errors.join('\n')).toContain('no admite Java');
   });
 
   it('rechaza identificadores repetidos entre archivos', () => {
@@ -182,6 +226,22 @@ describe('cobertura', () => {
 
   it('señala los temas con poco código', () => {
     expect(checkCoverage(bank(3, 'concept'), 3)).toContain('javascript: 0 % con código, mínimo 40 %');
+  });
+
+  it('exige preguntas de código, teoría y entrevista en cada semana del temario', () => {
+    const curriculumQuestions = Array.from({ length: 12 }, (_, index) =>
+      ['code', 'theory', 'interview'].flatMap((category) =>
+        Array.from({ length: 3 }, (_, questionIndex) => ({
+          ...concept,
+          id: `rec-semana-${index + 1}-${category}-${questionIndex + 1}`,
+          curriculum: { week: index + 1, category },
+        })),
+      ),
+    ).flat() as Question[];
+    expect(checkCurriculumCoverage(curriculumQuestions)).toEqual([]);
+    expect(checkCurriculumCoverage(curriculumQuestions.slice(1))).toContain(
+      'Semana 1 / code: 2 preguntas, mínimo 3',
+    );
   });
 });
 

@@ -68,6 +68,16 @@ test.describe('Axe y diseño', () => {
     await expectNoViolations(page, 'pregunta acertada');
   });
 
+  test('la pregunta abierta de entrevista y su respuesta orientativa', async ({ page }) => {
+    await page.goto('./');
+    await page.getByLabel('Tipo de pregunta').selectOption('interview');
+    await page.getByRole('button', { name: 'Empezar repaso' }).click();
+    await expectNoViolations(page, 'pregunta abierta de entrevista');
+    await page.getByLabel('Tu respuesta').fill('Explicaría la decisión y sus trade-offs.');
+    await page.getByRole('button', { name: 'Mostrar respuesta orientativa' }).click();
+    await expectNoViolations(page, 'respuesta orientativa');
+  });
+
   test('los resultados con todas las preguntas del banco', async ({ page }) => {
     await seed(page, seededProgress(bank));
     await page.goto('./#/resultado/semilla');
@@ -87,7 +97,15 @@ test.describe('Teclado', () => {
     await page.keyboard.press('Tab');
     await expect(page.getByRole('button', { name: 'Empezar reto rápido' })).toBeFocused();
 
-    // Hasta el filtro de tema, y de ahí al botón del reto a medida.
+    // Recorre los filtros y el inicio de Reciclaje antes de llegar al reto general.
+    await page.keyboard.press('Tab');
+    await expect(page.getByLabel('Bloque')).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(page.locator('.curriculum-filters select').nth(1)).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(page.getByLabel('Tipo de pregunta')).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(page.getByRole('button', { name: 'Empezar repaso' })).toBeFocused();
     await page.keyboard.press('Tab');
     await expect(page.getByLabel('Tema')).toBeFocused();
     await page.keyboard.press('Tab');

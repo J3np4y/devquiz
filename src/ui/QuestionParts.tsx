@@ -1,5 +1,10 @@
 import type { AppQuestion } from './labels.ts';
-import { DIFFICULTY_LABELS, LANGUAGE_LABELS, TOPIC_LABELS } from './labels.ts';
+import {
+  CURRICULUM_CATEGORY_LABELS,
+  DIFFICULTY_LABELS,
+  LANGUAGE_LABELS,
+  TOPIC_LABELS,
+} from './labels.ts';
 
 /** Muestra como código lo que va entre comillas invertidas. */
 export function RichText({ text }: { text: string }) {
@@ -37,6 +42,12 @@ export function QuestionTags({ question }: { question: AppQuestion }) {
       <span>{TOPIC_LABELS[question.topic]}</span>
       <span>{DIFFICULTY_LABELS[question.difficulty]}</span>
       {question.type === 'truefalse' && <span>Verdadero o falso</span>}
+      {question.curriculum && (
+        <>
+          <span>Semana {question.curriculum.week}</span>
+          <span>{CURRICULUM_CATEGORY_LABELS[question.curriculum.category]}</span>
+        </>
+      )}
     </p>
   );
 }

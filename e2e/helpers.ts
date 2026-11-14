@@ -2,7 +2,7 @@ import { fileURLToPath } from 'node:url';
 import { expect, type Page } from '@playwright/test';
 import { loadBank } from '../scripts/content/load.ts';
 import type { Question } from '../scripts/content/schema.ts';
-import type { Progress, Session } from '../src/core/types.ts';
+import { SCHEMA_VERSION, type Progress, type Session } from '../src/core/types.ts';
 
 export const STORAGE_KEY = 'devquiz.progress';
 
@@ -81,7 +81,7 @@ export const statValues = (page: Page) => page.locator('.stats dd').allTextConte
 /** Progreso con las preguntas indicadas ya respondidas, alternando aciertos y fallos. */
 export function seededProgress(questions: readonly Question[]): Progress {
   return {
-    schemaVersion: 1,
+    schemaVersion: SCHEMA_VERSION,
     sessions: [
       {
         id: 'semilla',
@@ -92,12 +92,13 @@ export function seededProgress(questions: readonly Question[]): Progress {
         currentIndex: 0,
         questions: questions.map((question, index) => {
           const correct = index % 2 === 0;
+          const options = question.options ?? [];
           const optionId = correct
-            ? question.correct
-            : (question.options.find((option) => option.id !== question.correct)?.id ?? '');
+            ? question.correct ?? ''
+            : (options.find((option) => option.id !== question.correct)?.id ?? '');
           return {
             questionId: question.id,
-            optionOrder: question.options.map((option) => option.id),
+            optionOrder: options.map((option) => option.id),
             answer: { optionId, correct, at: index + 1 },
           };
         }),
@@ -119,7 +120,7 @@ export async function seed(page: Page, value: unknown) {
 /** Abre un reto en curso con preguntas concretas, para no depender de la selección aleatoria. */
 export async function openChallengeWith(page: Page, ids: string[]) {
   const progress: Progress = {
-    schemaVersion: 1,
+    schemaVersion: SCHEMA_VERSION,
     sessions: [
       {
         id: 'en-curso',
@@ -129,7 +130,7 @@ export async function openChallengeWith(page: Page, ids: string[]) {
         currentIndex: 0,
         questions: ids.map((id) => ({
           questionId: id,
-          optionOrder: questionById(id).options.map((option) => option.id),
+          optionOrder: (questionById(id).options ?? []).map((option) => option.id),
         })),
       },
     ],

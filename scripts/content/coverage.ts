@@ -1,4 +1,10 @@
-import { DIFFICULTIES, TOPICS, type Question, type Topic } from './schema.ts';
+import {
+  CURRICULUM_CATEGORIES,
+  DIFFICULTIES,
+  TOPICS,
+  type Question,
+  type Topic,
+} from './schema.ts';
 
 /** Temas en los que el código encaja de forma natural. */
 const CODE_TOPICS: readonly Topic[] = ['javascript', 'python', 'sql', 'fundamentos', 'testing'];
@@ -40,4 +46,17 @@ export function coverageTable(questions: Question[]): string {
 
   const header = `${''.padEnd(14)}${['princ', 'inter', 'avanz'].map((label) => label.padStart(6)).join('')}${'código'.padStart(8)}`;
   return [header, ...rows].join('\n');
+}
+
+export function checkCurriculumCoverage(questions: Question[]): string[] {
+  const errors: string[] = [];
+  for (let week = 1; week <= 12; week++) {
+    for (const category of CURRICULUM_CATEGORIES) {
+      const count = questions.filter(
+        (question) => question.curriculum?.week === week && question.curriculum.category === category,
+      ).length;
+      if (count < 3) errors.push(`Semana ${week} / ${category}: ${count} preguntas, mínimo 3`);
+    }
+  }
+  return errors;
 }

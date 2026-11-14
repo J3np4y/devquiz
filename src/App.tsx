@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { failedQuestions } from './core/history.ts';
-import { CHALLENGE_SIZE, selectFiltered, selectMixed, selectReview } from './core/selection.ts';
+import {
+  CHALLENGE_SIZE,
+  selectCurriculum,
+  selectCurriculumFailures,
+  selectFiltered,
+  selectMixed,
+  selectReview,
+} from './core/selection.ts';
 import {
   activeSession,
   advance,
@@ -17,7 +24,13 @@ import {
   saveShortcutsEnabled,
   type StorageLike,
 } from './core/storage.ts';
-import type { ChallengeFilters, ChallengeMode, Progress, Question } from './core/types.ts';
+import type {
+  ChallengeFilters,
+  ChallengeMode,
+  CurriculumFilters,
+  Progress,
+  Question,
+} from './core/types.ts';
 import { Home } from './ui/Home.tsx';
 import type { AppQuestion } from './ui/labels.ts';
 import { Quiz } from './ui/Quiz.tsx';
@@ -28,14 +41,19 @@ import { useProgress } from './ui/useProgress.ts';
 
 interface AppProps {
   bank: readonly AppQuestion[];
+  curriculumBank?: readonly AppQuestion[];
   storage: StorageLike | null;
 }
 
-export function App({ bank, storage }: AppProps) {
+export function App({ bank, curriculumBank = [], storage }: AppProps) {
   const route = useHashRoute();
-  const { progress, status, saveFailed, update, reset } = useProgress(bank, storage);
+  const allQuestions = useMemo(() => [...bank, ...curriculumBank], [bank, curriculumBank]);
+  const { progress, status, saveFailed, update, reset } = useProgress(allQuestions, storage);
   const [shortcutsEnabled, setShortcutsEnabled] = useState(() => loadShortcutsEnabled(storage));
-  const questionsById = useMemo(() => new Map(bank.map((question) => [question.id, question])), [bank]);
+  const questionsById = useMemo(
+    () => new Map(allQuestions.map((question) => [question.id, question])),
+    [allQuestions],
+  );
 
   const active = activeSession(progress);
   const activeItem = active && currentQuestion(active);
@@ -81,6 +99,12 @@ export function App({ bank, storage }: AppProps) {
   const startReview = (filters: ChallengeFilters = {}) =>
     start('review', selectReview(bank, progress.sessions, CHALLENGE_SIZE, filters));
 
+  const startCurriculum = (filters: CurriculumFilters = {}) =>
+    start('curriculum', selectCurriculum(curriculumBank, progress.sessions, Math.random, filters));
+
+  const startCurriculumFailures = (filters: CurriculumFilters = {}) =>
+    start('curriculum', selectCurriculumFailures(curriculumBank, progress.sessions, filters));
+
   if (inChallenge) {
     return (
       <Quiz
@@ -94,7 +118,9 @@ export function App({ bank, storage }: AppProps) {
           setShortcutsEnabled(enabled);
           saveShortcutsEnabled(storage, enabled);
         }}
-        onAnswer={(optionId) => update((current) => answerCurrent(current, activeQuestion, optionId, Date.now()))}
+        onAnswer={(optionId, response) =>
+          update((current) => answerCurrent(current, activeQuestion, optionId, Date.now(), response))
+        }
         onNext={() => {
           const isLast = active.currentIndex >= active.questions.length - 1;
           update((current) => advance(current, Date.now()));
@@ -111,9 +137,15 @@ export function App({ bank, storage }: AppProps) {
         key={finished.id}
         session={finished}
         questionsById={questionsById}
-        failedCount={failedQuestions(progress.sessions, bank).length}
+        failedCount={
+          finished.mode === 'curriculum'
+            ? failedQuestions(progress.sessions, curriculumBank).length
+            : failedQuestions(progress.sessions, bank).length
+        }
         saveFailed={saveFailed}
-        onReview={() => startReview()}
+        onReview={() =>
+          finished.mode === 'curriculum' ? startCurriculumFailures() : startReview()
+        }
         onHome={() => navigate(HOME)}
       />
     );
@@ -122,6 +154,7 @@ export function App({ bank, storage }: AppProps) {
   return (
     <Home
       bank={bank}
+      curriculumBank={curriculumBank}
       progress={progress}
       active={active}
       status={status}
@@ -129,10 +162,15 @@ export function App({ bank, storage }: AppProps) {
       onStartMixed={() => start('mixed', selectMixed(bank, progress.sessions, Math.random))}
       onStartFiltered={(filters) => start('filtered', selectFiltered(bank, filters, progress.sessions, Math.random))}
       onStartReview={startReview}
+      onStartCurriculum={(filters, failedOnly) =>
+        failedOnly
+          ? startCurriculum({ ...filters, failedOnly: true })
+          : startCurriculum(filters)
+      }
       onResume={() => navigate(CHALLENGE)}
       onDiscard={() => update((current) => discardActive(current, Date.now()))}
       onReset={reset}
-      onImport={(imported: Progress) => update(() => reconcileActive(imported, bank, Date.now()))}
+      onImport={(imported: Progress) => update(() => reconcileActive(imported, allQuestions, Date.now()))}
     />
   );
 }

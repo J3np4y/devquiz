@@ -1,0 +1,409 @@
+- id: rec-semana-01-codigo
+  topic: fundamentos
+  difficulty: principiante
+  type: code
+  language: java
+  curriculum: { week: 1, category: code }
+  prompt: "¿Qué imprimen estas dos comparaciones?"
+  code: |
+    record Pedido(String estado, int importe) {}
+
+    class Main {
+      public static void main(String[] args) {
+        var primero = new Pedido("PAGADO", 25);
+        var segundo = new Pedido("PAGADO", 25);
+        System.out.println(primero == segundo);
+        System.out.println(primero.equals(segundo));
+      }
+    }
+  options:
+    - { id: a, text: "true y true" }
+    - { id: b, text: "false y true" }
+    - { id: c, text: "false y false" }
+    - { id: d, text: "true y false" }
+  correct: b
+  explanation: "Son dos objetos distintos, por eso `==` es falso. Los records generan una igualdad basada en sus componentes, así que `equals` es verdadero."
+
+- id: rec-semana-01-teoria
+  topic: fundamentos
+  difficulty: principiante
+  type: concept
+  curriculum: { week: 1, category: theory }
+  prompt: "¿Qué distingue principalmente a un `record` de Java de una clase de datos escrita a mano?"
+  options:
+    - { id: a, text: "Genera automáticamente constructor, accesores, `equals`, `hashCode` y `toString` basados en sus componentes" }
+    - { id: b, text: "Permite modificar sus componentes desde cualquier parte" }
+    - { id: c, text: "Es siempre una entidad persistida en una base de datos" }
+    - { id: d, text: "Puede extender cualquier clase concreta" }
+  correct: a
+  explanation: "Un record es una forma concisa de modelar datos con igualdad por valor. Sus componentes son finales y la clase no puede extender otra clase."
+
+- id: rec-semana-01-entrevista
+  topic: fundamentos
+  difficulty: intermedio
+  type: open
+  curriculum: { week: 1, category: interview }
+  prompt: "En una entrevista te preguntan cuándo elegirías un `record` y qué debes tener en cuenta con `equals` y `==`. ¿Cómo lo explicarías?"
+  modelAnswer: "Usaría un record para transportar datos cuyo estado no debe cambiar y cuya igualdad depende de sus componentes, por ejemplo un DTO. `==` compara referencias en objetos; `equals` compara contenido si la clase lo implementa. Un record genera `equals` y `hashCode` por valor, pero sus componentes mutables pueden hacer que el estado observado cambie indirectamente."
+  explanation: "Una buena respuesta diferencia identidad y valor, menciona la inmutabilidad superficial de los records y aporta un caso de uso concreto."
+
+- id: rec-semana-04-codigo
+  topic: fundamentos
+  difficulty: principiante
+  type: code
+  language: java
+  curriculum: { week: 4, category: code }
+  prompt: "¿Qué estado devuelve el servicio cuando el identificador no existe?"
+  code: |
+    class PedidoService {
+      private final Map<Long, Pedido> pedidos = new HashMap<>();
+
+      Optional<Pedido> buscar(long id) {
+        return Optional.ofNullable(pedidos.get(id));
+      }
+    }
+  options:
+    - { id: a, text: "Devuelve `null`" }
+    - { id: b, text: "Devuelve `Optional.empty()`" }
+    - { id: c, text: "Lanza siempre `NoSuchElementException`" }
+    - { id: d, text: "Devuelve un `Pedido` vacío" }
+  correct: b
+  explanation: "`Map.get` devuelve `null` si falta la clave; `Optional.ofNullable` convierte ese resultado en `Optional.empty()`."
+
+- id: rec-semana-04-teoria
+  topic: fundamentos
+  difficulty: principiante
+  type: concept
+  curriculum: { week: 4, category: theory }
+  prompt: "¿Qué responsabilidad corresponde principalmente a un controlador REST de Spring?"
+  options:
+    - { id: a, text: "Traducir HTTP a llamadas de aplicación y construir respuestas HTTP" }
+    - { id: b, text: "Ejecutar directamente todas las consultas SQL" }
+    - { id: c, text: "Definir el esquema físico de la base de datos" }
+    - { id: d, text: "Sustituir las pruebas de integración" }
+  correct: a
+  explanation: "El controlador adapta la petición y respuesta HTTP. La lógica de negocio va en servicios y el acceso a datos en repositorios."
+
+- id: rec-semana-04-entrevista
+  topic: fundamentos
+  difficulty: intermedio
+  type: open
+  curriculum: { week: 4, category: interview }
+  prompt: "¿Cómo repartirías la responsabilidad entre controlador, servicio y repositorio en una API CRUD?"
+  modelAnswer: "El controlador valida y traduce HTTP a una operación de aplicación; el servicio contiene reglas de negocio y define límites transaccionales; el repositorio encapsula la persistencia. El controlador no debería decidir reglas ni construir consultas SQL."
+  explanation: "Explica el propósito de cada capa y por qué mantenerlas separadas facilita pruebas y cambios."
+
+- id: rec-semana-06-codigo
+  topic: fundamentos
+  difficulty: intermedio
+  type: code
+  language: java
+  curriculum: { week: 6, category: code }
+  prompt: "Con esta relación JPA, ¿qué objeto es dueño de la clave foránea `cliente_id`?"
+  code: |
+    @Entity
+    class Pedido {
+      @ManyToOne(fetch = FetchType.LAZY)
+      @JoinColumn(name = "cliente_id")
+      private Cliente cliente;
+    }
+
+    @Entity
+    class Cliente {
+      @OneToMany(mappedBy = "cliente")
+      private List<Pedido> pedidos;
+    }
+  options:
+    - { id: a, text: "`Cliente.pedidos`, porque es una colección" }
+    - { id: b, text: "`Pedido.cliente`, porque declara `@JoinColumn`" }
+    - { id: c, text: "Ambos lados por igual" }
+    - { id: d, text: "Ninguno; la clave se guarda en una tabla intermedia" }
+  correct: b
+  explanation: "El lado que declara `@JoinColumn` mantiene la relación y la clave foránea. `mappedBy` señala el lado inverso."
+
+- id: rec-semana-06-teoria
+  topic: fundamentos
+  difficulty: intermedio
+  type: concept
+  curriculum: { week: 6, category: theory }
+  prompt: "¿Por qué suele ser preferible devolver un DTO en vez de exponer directamente una entidad JPA desde la API?"
+  options:
+    - { id: a, text: "Desacopla el contrato HTTP del modelo persistente y permite controlar los datos expuestos" }
+    - { id: b, text: "Hace que Hibernate deje de usar transacciones" }
+    - { id: c, text: "Evita tener que validar las peticiones" }
+    - { id: d, text: "Convierte automáticamente cualquier relación `LAZY` en una consulta eficiente" }
+  correct: a
+  explanation: "El DTO define una representación de API estable y evita filtrar detalles internos o serializar accidentalmente relaciones."
+
+- id: rec-semana-06-entrevista
+  topic: fundamentos
+  difficulty: avanzado
+  type: open
+  curriculum: { week: 6, category: interview }
+  prompt: "¿Qué problema resuelve `@Transactional` en un servicio y dónde pondrías normalmente el límite de una operación de negocio?"
+  modelAnswer: "Define una unidad de trabajo para que las operaciones de persistencia participen en una transacción. Normalmente pondría el límite en el método de servicio que representa la operación de negocio, no alrededor de cada llamada individual al repositorio ni en el controlador."
+  explanation: "Conviene mencionar atomicidad, el contexto de persistencia y que la configuración concreta de rollback depende de la excepción y del framework."
+
+- id: rec-semana-01-codigo-02
+  topic: fundamentos
+  difficulty: principiante
+  type: code
+  language: java
+  curriculum: { week: 1, category: code }
+  prompt: "¿Cuántos pedidos pagados cuenta este flujo?"
+  code: |
+    var pedidos = List.of("PAGADO", "PENDIENTE", "PAGADO");
+    long cantidad = pedidos.stream()
+      .filter("PAGADO"::equals)
+      .count();
+    System.out.println(cantidad);
+  options:
+    - { id: a, text: "1" }
+    - { id: b, text: "2" }
+    - { id: c, text: "3" }
+    - { id: d, text: "No compila porque `count` requiere una lista" }
+  correct: b
+  explanation: "`filter` conserva los dos elementos que cumplen la condición y `count` devuelve su cantidad como `long`."
+
+- id: rec-semana-01-codigo-03
+  topic: fundamentos
+  difficulty: intermedio
+  type: code
+  language: java
+  curriculum: { week: 1, category: code }
+  prompt: "¿Qué valor imprime el `reduce`?"
+  code: |
+    int total = List.of(3, 5, 7).stream()
+      .filter(n -> n > 3)
+      .mapToInt(Integer::intValue)
+      .sum();
+    System.out.println(total);
+  options:
+    - { id: a, text: "3" }
+    - { id: b, text: "12" }
+    - { id: c, text: "15" }
+    - { id: d, text: "0" }
+  correct: b
+  explanation: "El filtro descarta el 3 y la suma agrega 5 + 7."
+
+- id: rec-semana-01-teoria-02
+  topic: fundamentos
+  difficulty: principiante
+  type: concept
+  curriculum: { week: 1, category: theory }
+  prompt: "¿Qué compara `==` cuando sus operandos son referencias a objetos?"
+  options:
+    - { id: a, text: "Si ambas referencias apuntan al mismo objeto" }
+    - { id: b, text: "Si todos los campos tienen el mismo valor" }
+    - { id: c, text: "Si sus métodos `hashCode` devuelven el mismo número" }
+    - { id: d, text: "Si los objetos tienen la misma clase, sin mirar su identidad" }
+  correct: a
+  explanation: "`==` compara identidad de referencia; para igualdad de valor se usa `equals` cuando la clase lo implementa adecuadamente."
+
+- id: rec-semana-01-teoria-03
+  topic: fundamentos
+  difficulty: intermedio
+  type: concept
+  curriculum: { week: 1, category: theory }
+  prompt: "¿Qué característica tienen las operaciones intermedias de un Stream, como `filter` y `map`?"
+  options:
+    - { id: a, text: "Son perezosas y se ejecutan al llegar a una operación terminal" }
+    - { id: b, text: "Siempre modifican la colección de origen" }
+    - { id: c, text: "Generan un resultado definitivo inmediatamente" }
+    - { id: d, text: "Solo pueden usarse una vez por aplicación" }
+  correct: a
+  explanation: "Las operaciones intermedias describen el pipeline; una operación terminal como `collect`, `sum` o `count` lo consume."
+
+- id: rec-semana-01-entrevista-02
+  topic: fundamentos
+  difficulty: intermedio
+  type: open
+  curriculum: { week: 1, category: interview }
+  prompt: "¿Qué errores pueden aparecer al implementar `equals` sin tener en cuenta `hashCode`?"
+  modelAnswer: "El contrato exige que objetos iguales según `equals` tengan el mismo `hashCode`. Si se incumple, colecciones hash como `HashSet` o `HashMap` pueden no encontrar una clave o permitir duplicados. También cuidaría la igualdad simétrica, transitiva y consistente."
+  explanation: "Describe el contrato entre ambos métodos y el impacto observable en colecciones basadas en hash."
+
+- id: rec-semana-01-entrevista-03
+  topic: fundamentos
+  difficulty: avanzado
+  type: open
+  curriculum: { week: 1, category: interview }
+  prompt: "¿Cuándo evitarías un pipeline de Streams y qué riesgos tienen los efectos secundarios dentro de él?"
+  modelAnswer: "Usaría un bucle cuando la lógica con estado, los `break` o el manejo paso a paso sean más claros. Los efectos secundarios en operaciones de Stream dificultan razonar sobre orden y paralelismo; preferiría transformaciones puras y dejaría la escritura o el envío de eventos en una fase explícita."
+  explanation: "Una buena respuesta elige la herramienta por legibilidad y no asume que Streams son siempre más rápidos o claros."
+
+- id: rec-semana-04-codigo-02
+  topic: fundamentos
+  difficulty: intermedio
+  type: code
+  language: java
+  curriculum: { week: 4, category: code }
+  prompt: "¿Qué respuesta HTTP produce este método cuando la búsqueda no encuentra el pedido?"
+  code: |
+    @GetMapping("/pedidos/{id}")
+    ResponseEntity<Pedido> buscar(@PathVariable long id) {
+      return servicio.buscar(id)
+        .map(ResponseEntity::ok)
+        .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+  options:
+    - { id: a, text: "200 OK con cuerpo vacío" }
+    - { id: b, text: "204 No Content" }
+    - { id: c, text: "404 Not Found" }
+    - { id: d, text: "500 Internal Server Error" }
+  correct: c
+  explanation: "`Optional.empty()` toma la rama `orElseGet`, que construye una respuesta 404."
+
+- id: rec-semana-04-codigo-03
+  topic: fundamentos
+  difficulty: intermedio
+  type: code
+  language: java
+  curriculum: { week: 4, category: code }
+  prompt: "¿Qué activa `@Valid` en este parámetro?"
+  code: |
+    @PostMapping("/pedidos")
+    ResponseEntity<PedidoResponse> crear(
+        @Valid @RequestBody CrearPedidoRequest request) {
+      return ResponseEntity.ok(servicio.crear(request));
+    }
+  options:
+    - { id: a, text: "La validación de las restricciones declaradas en el DTO antes de invocar el cuerpo del método" }
+    - { id: b, text: "La validación de las tablas en PostgreSQL al arrancar" }
+    - { id: c, text: "La autenticación del usuario" }
+    - { id: d, text: "La ejecución automática de pruebas MockMvc" }
+  correct: a
+  explanation: "Spring aplica Bean Validation al cuerpo recibido; si no es válido, el flujo normal del controlador no continúa."
+
+- id: rec-semana-04-teoria-02
+  topic: fundamentos
+  difficulty: principiante
+  type: concept
+  curriculum: { week: 4, category: theory }
+  prompt: "¿Cuándo es apropiado responder `404 Not Found` en una API de pedidos?"
+  options:
+    - { id: a, text: "Cuando el recurso solicitado no existe o no se encuentra disponible según el contrato" }
+    - { id: b, text: "Ante cualquier error de validación" }
+    - { id: c, text: "Cuando el servidor ha creado el recurso" }
+    - { id: d, text: "Cuando la base de datos funciona correctamente" }
+  correct: a
+  explanation: "404 expresa que no se encontró el recurso solicitado; los errores de entrada suelen corresponder a 400 o 422 según el contrato."
+
+- id: rec-semana-04-teoria-03
+  topic: fundamentos
+  difficulty: intermedio
+  type: concept
+  curriculum: { week: 4, category: theory }
+  prompt: "¿Qué comunica normalmente una respuesta `204 No Content`?"
+  options:
+    - { id: a, text: "La petición tuvo éxito y no devuelve una representación en el cuerpo" }
+    - { id: b, text: "La petición creó un recurso nuevo y devuelve su cuerpo" }
+    - { id: c, text: "El recurso solicitado no existe" }
+    - { id: d, text: "El cliente debe autenticarse" }
+  correct: a
+  explanation: "204 indica éxito sin contenido de respuesta; por contrato no se envía un cuerpo."
+
+- id: rec-semana-04-entrevista-02
+  topic: fundamentos
+  difficulty: intermedio
+  type: open
+  curriculum: { week: 4, category: interview }
+  prompt: "¿Cómo probarías un endpoint CRUD y qué casos negativos incluirías?"
+  modelAnswer: "Con MockMvc comprobaría método, ruta, estado, cabeceras y JSON de entrada/salida. Cubriría recurso inexistente, cuerpo inválido, campos límite y reglas de negocio, aislando el servicio cuando pruebo el controlador. Mantendría pruebas separadas para la lógica del servicio y la persistencia."
+  explanation: "Una respuesta completa diferencia contrato HTTP, reglas de negocio y acceso a datos, y elige una prueba adecuada para cada capa."
+
+- id: rec-semana-04-entrevista-03
+  topic: fundamentos
+  difficulty: avanzado
+  type: open
+  curriculum: { week: 4, category: interview }
+  prompt: "¿Cómo diseñarías un contrato de errores consistente para distintos endpoints Spring?"
+  modelAnswer: "Definiría un formato estable como Problem Details con tipo, título, estado y detalle seguro. Centralizaría la conversión de errores conocidos con `@ControllerAdvice`, distinguiría validación, ausencia de recurso y fallos inesperados, y evitaría exponer trazas o datos internos."
+  explanation: "Es importante combinar consistencia del contrato con mensajes seguros y códigos HTTP que describan la causa."
+
+- id: rec-semana-06-codigo-02
+  topic: fundamentos
+  difficulty: intermedio
+  type: code
+  language: java
+  curriculum: { week: 6, category: code }
+  prompt: "¿Qué ocurre al modificar una entidad gestionada dentro de este método?"
+  code: |
+    @Transactional
+    public void cambiarEstado(long id, Estado estado) {
+      Pedido pedido = repositorio.findById(id).orElseThrow();
+      pedido.setEstado(estado);
+    }
+  options:
+    - { id: a, text: "El dirty checking puede persistir el cambio al sincronizar el contexto de persistencia" }
+    - { id: b, text: "No se guarda porque falta llamar siempre a `save`" }
+    - { id: c, text: "La entidad se convierte automáticamente en un DTO" }
+    - { id: d, text: "El método inicia una transacción distribuida" }
+  correct: a
+  explanation: "La entidad recuperada está gestionada; Hibernate detecta los cambios y los sincroniza antes del commit, normalmente mediante SQL."
+
+- id: rec-semana-06-codigo-03
+  topic: fundamentos
+  difficulty: avanzado
+  type: code
+  language: java
+  curriculum: { week: 6, category: code }
+  prompt: "¿Qué efecto tiene devolver directamente esta asociación `LAZY` fuera de su sesión?"
+  code: |
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Cliente cliente;
+
+    // El servicio retorna Pedido y la serialización ocurre después.
+  options:
+    - { id: a, text: "Puede fallar al acceder a `cliente` si la asociación no está inicializada y la sesión ya terminó" }
+    - { id: b, text: "La asociación se convierte automáticamente en `null`" }
+    - { id: c, text: "Hibernate siempre ejecuta una consulta al compilar" }
+    - { id: d, text: "La anotación obliga a crear una tabla intermedia" }
+  correct: a
+  explanation: "Una asociación lazy necesita un contexto de persistencia para cargarse. Devolver entidades puede provocar errores de carga tardía o consultas inesperadas durante serialización."
+
+- id: rec-semana-06-teoria-02
+  topic: fundamentos
+  difficulty: principiante
+  type: concept
+  curriculum: { week: 6, category: theory }
+  prompt: "¿Qué representa una entidad dentro de un contexto de persistencia JPA?"
+  options:
+    - { id: a, text: "Un objeto cuyo estado puede ser gestionado y sincronizado con una fila de la base" }
+    - { id: b, text: "Un objeto inmutable que nunca puede cambiar" }
+    - { id: c, text: "Una respuesta HTTP serializada" }
+    - { id: d, text: "Una conexión JDBC independiente por cada campo" }
+  correct: a
+  explanation: "JPA rastrea entidades gestionadas dentro del contexto de persistencia y sincroniza los cambios con la base de datos."
+
+- id: rec-semana-06-teoria-03
+  topic: fundamentos
+  difficulty: intermedio
+  type: concept
+  curriculum: { week: 6, category: theory }
+  prompt: "¿Qué significa que una asociación `@ManyToOne` sea `LAZY`?"
+  options:
+    - { id: a, text: "Que el ORM puede diferir la carga de la entidad relacionada hasta que se acceda a ella" }
+    - { id: b, text: "Que la asociación no puede consultarse" }
+    - { id: c, text: "Que se crea siempre una tabla intermedia" }
+    - { id: d, text: "Que el objeto relacionado se carga antes que el pedido" }
+  correct: a
+  explanation: "La carga diferida evita traer datos relacionados sin necesidad, pero requiere planificar la consulta y el límite de la sesión."
+
+- id: rec-semana-06-entrevista-02
+  topic: fundamentos
+  difficulty: avanzado
+  type: open
+  curriculum: { week: 6, category: interview }
+  prompt: "¿Qué diferencia hay entre una entidad gestionada y una entidad detached?"
+  modelAnswer: "La entidad gestionada pertenece al contexto de persistencia y sus cambios son rastreados para sincronizarse. Una detached ya no está asociada a ese contexto; modificarla no implica por sí mismo que el ORM guarde el cambio. Para actualizarla se debe definir un flujo explícito, por ejemplo volver a cargar la gestionada y copiar los cambios."
+  explanation: "La respuesta debe mencionar el contexto de persistencia y que el dirty checking solo aplica a entidades gestionadas."
+
+- id: rec-semana-06-entrevista-03
+  topic: fundamentos
+  difficulty: intermedio
+  type: open
+  curriculum: { week: 6, category: interview }
+  prompt: "¿Qué responsabilidades dejarías fuera de una entidad JPA al diseñar una API?"
+  modelAnswer: "Evitaría usar la entidad como contrato HTTP: no expondría directamente relaciones, detalles internos ni campos de persistencia. Usaría DTOs para entrada y salida, validaría la petición en su frontera y mantendría las reglas de aplicación y los límites transaccionales en el servicio."
+  explanation: "Explica el desacoplamiento entre modelo persistente, contrato externo y lógica de aplicación."

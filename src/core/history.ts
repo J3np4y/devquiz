@@ -105,7 +105,7 @@ const accuracyOf = (correct: number, answered: number) => (answered === 0 ? null
  */
 export function computeStats(sessions: readonly Session[], bank: Bank): Stats {
   const questionsById = new Map<string, Question>(bank.map((question) => [question.id, question]));
-  const normal = sessions.filter((session) => session.mode !== 'review');
+  const normal = sessions.filter((session) => session.mode === 'mixed' || session.mode === 'filtered');
   const totals = new Map<Topic, { answered: number; correct: number }>();
   let answered = 0;
   let correct = 0;

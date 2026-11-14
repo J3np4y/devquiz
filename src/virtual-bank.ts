@@ -3,3 +3,8 @@ declare module 'virtual:bank' {
   const bank: import('./ui/labels.ts').AppQuestion[];
   export default bank;
 }
+
+declare module 'virtual:reciclaje-bank' {
+  const bank: import('./ui/labels.ts').AppQuestion[];
+  export default bank;
+}
