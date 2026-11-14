@@ -1,4 +1,4 @@
-import type { ChallengeMode, Difficulty, Question, Topic } from '../core/types.ts';
+import type { ChallengeMode, CurriculumCategory, Difficulty, Question, Topic } from '../core/types.ts';
 
 /** Pregunta tal como llega a la app: con el código ya resaltado al compilar. */
 export type AppQuestion = Question & { codeHtml?: string };
@@ -8,6 +8,13 @@ export const LANGUAGE_LABELS: Record<NonNullable<Question['language']>, string> 
   javascript: 'JavaScript en Node.js 24',
   python: 'Python 3.12',
   sql: 'SQL en SQLite',
+  java: 'Java',
+};
+
+export const CURRICULUM_CATEGORY_LABELS: Record<CurriculumCategory, string> = {
+  code: 'Código',
+  theory: 'Teoría',
+  interview: 'Entrevista técnica',
 };
 
 export const TOPIC_LABELS: Record<Topic, string> = {
@@ -30,6 +37,7 @@ export const MODE_LABELS: Record<ChallengeMode, string> = {
   mixed: 'Reto rápido',
   filtered: 'Reto a medida',
   review: 'Repaso de fallos',
+  curriculum: 'Repaso de Reciclaje',
 };
 
 export const TOPICS = Object.keys(TOPIC_LABELS) as Topic[];

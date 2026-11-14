@@ -7,7 +7,16 @@ export type Bank = readonly Question[];
 /** Devuelve un número en [0, 1). Se inyecta para que la selección sea reproducible en tests. */
 export type Rng = () => number;
 
-export type ChallengeMode = 'mixed' | 'filtered' | 'review';
+export type ChallengeMode = 'mixed' | 'filtered' | 'review' | 'curriculum';
+
+export type CurriculumCategory = NonNullable<Question['curriculum']>['category'];
+
+export interface CurriculumFilters {
+  block?: 1 | 2 | 3;
+  week?: number;
+  category?: CurriculumCategory;
+  failedOnly?: boolean;
+}
 
 export interface ChallengeFilters {
   topic?: Topic;
@@ -17,6 +26,7 @@ export interface ChallengeFilters {
 export interface Answer {
   optionId: string;
   correct: boolean;
+  response?: string;
   /** Milisegundos desde la época. */
   at: number;
 }
@@ -40,7 +50,7 @@ export interface Session {
   questions: SessionQuestion[];
 }
 
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
 /** Los fallos y las estadísticas no se guardan: se calculan a partir de las sesiones. */
 export interface Progress {

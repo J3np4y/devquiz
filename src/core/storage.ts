@@ -39,7 +39,9 @@ export interface LoadResult {
 type Migration = (data: Record<string, unknown>) => Record<string, unknown>;
 
 /** Cada entrada convierte los datos de la versión indicada a la siguiente. */
-const MIGRATIONS: Record<number, Migration> = {};
+const MIGRATIONS: Record<number, Migration> = {
+  1: (data) => ({ ...data, schemaVersion: 2 }),
+};
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -51,7 +53,8 @@ const isAnswer = (value: unknown) =>
   isRecord(value) &&
   typeof value.optionId === 'string' &&
   typeof value.correct === 'boolean' &&
-  typeof value.at === 'number';
+  typeof value.at === 'number' &&
+  (value.response === undefined || typeof value.response === 'string');
 
 const isSessionQuestion = (value: unknown) =>
   isRecord(value) &&
@@ -62,7 +65,7 @@ const isSessionQuestion = (value: unknown) =>
 const isSession = (value: unknown) =>
   isRecord(value) &&
   typeof value.id === 'string' &&
-  ['mixed', 'filtered', 'review'].includes(value.mode as string) &&
+  ['mixed', 'filtered', 'review', 'curriculum'].includes(value.mode as string) &&
   ['active', 'completed', 'abandoned'].includes(value.status as string) &&
   typeof value.startedAt === 'number' &&
   typeof value.currentIndex === 'number' &&

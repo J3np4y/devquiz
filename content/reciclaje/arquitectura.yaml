@@ -1,0 +1,653 @@
+- id: rec-semana-03-codigo
+  topic: arquitectura
+  difficulty: principiante
+  type: code
+  language: java
+  curriculum: { week: 3, category: code }
+  prompt: "¿Qué código HTTP expresa que el pedido se ha creado correctamente?"
+  code: |
+    @PostMapping("/pedidos")
+    ResponseEntity<PedidoResponse> crear(@RequestBody PedidoRequest request) {
+      PedidoResponse creado = servicio.crear(request);
+      URI ubicacion = URI.create("/pedidos/" + creado.id());
+      return ResponseEntity.created(ubicacion).body(creado);
+    }
+  options:
+    - { id: a, text: "200 OK" }
+    - { id: b, text: "201 Created" }
+    - { id: c, text: "204 No Content" }
+    - { id: d, text: "302 Found" }
+  correct: b
+  explanation: "`ResponseEntity.created` construye una respuesta 201 e incluye la cabecera `Location` con el recurso creado."
+
+- id: rec-semana-03-teoria
+  topic: arquitectura
+  difficulty: principiante
+  type: concept
+  curriculum: { week: 3, category: theory }
+  prompt: "¿Cuál describe mejor la diferencia habitual entre `PUT` y `PATCH`?"
+  options:
+    - { id: a, text: "`PUT` reemplaza la representación del recurso; `PATCH` aplica una modificación parcial" }
+    - { id: b, text: "`PUT` solo consulta; `PATCH` crea siempre un recurso" }
+    - { id: c, text: "Ambos significan siempre lo mismo y son idempotentes por definición de la aplicación" }
+    - { id: d, text: "`PATCH` no puede cambiar datos persistidos" }
+  correct: a
+  explanation: "PUT suele expresar reemplazo completo y PATCH una modificación parcial; la semántica exacta debe quedar definida en el contrato."
+
+- id: rec-semana-03-entrevista
+  topic: arquitectura
+  difficulty: intermedio
+  type: open
+  curriculum: { week: 3, category: interview }
+  prompt: "¿Qué significa que una operación HTTP sea idempotente y cuándo importa?"
+  modelAnswer: "Repetir la misma petición una o varias veces deja el servidor en el mismo estado final que ejecutarla una vez. Importa ante reintentos por timeout o fallos de red; por ejemplo, un cliente puede repetir un PUT, mientras que un POST puede requerir una clave de idempotencia para evitar duplicados."
+  explanation: "Idempotencia describe el efecto sobre el estado, no que las respuestas HTTP tengan que ser idénticas."
+
+- id: rec-semana-07-codigo
+  topic: arquitectura
+  difficulty: intermedio
+  type: code
+  language: java
+  curriculum: { week: 7, category: code }
+  prompt: "¿Qué intenta evitar `JOIN FETCH` en esta consulta?"
+  code: |
+    @Query("""
+      select p
+      from Pedido p
+      join fetch p.cliente
+      where p.estado = :estado
+      """)
+    List<Pedido> buscarConCliente(String estado);
+  options:
+    - { id: a, text: "Una consulta adicional por cada pedido al acceder a su cliente" }
+    - { id: b, text: "La necesidad de una transacción para cualquier escritura" }
+    - { id: c, text: "La creación de una clave foránea" }
+    - { id: d, text: "La validación de los parámetros HTTP" }
+  correct: a
+  explanation: "La asociación se carga en la consulta principal y evita el patrón N+1 al recorrer los pedidos y acceder a sus clientes."
+
+- id: rec-semana-07-teoria
+  topic: arquitectura
+  difficulty: intermedio
+  type: concept
+  curriculum: { week: 7, category: theory }
+  prompt: "¿Qué es el problema N+1 en el acceso ORM?"
+  options:
+    - { id: a, text: "Una consulta obtiene N filas y luego se ejecuta otra consulta por cada fila para cargar una asociación" }
+    - { id: b, text: "Una transacción que ejecuta una sola consulta más de una vez" }
+    - { id: c, text: "Un error que aparece únicamente cuando la tabla tiene una fila" }
+    - { id: d, text: "Una migración que crea N+1 índices" }
+  correct: a
+  explanation: "El número de consultas crece con las filas recuperadas. Se diagnostica observando las consultas y se corrige con carga dirigida adecuada."
+
+- id: rec-semana-07-entrevista
+  topic: arquitectura
+  difficulty: avanzado
+  type: open
+  curriculum: { week: 7, category: interview }
+  prompt: "¿Cómo investigarías un N+1 en Hibernate y qué alternativas evaluarías para resolverlo?"
+  modelAnswer: "Activaría y observaría el SQL generado, mediría cuántas consultas se ejecutan y localizaría la asociación que se carga repetidamente. Según el caso usaría `JOIN FETCH`, `@EntityGraph` o una proyección DTO; mantendría `LAZY` como opción general y comprobaría el comportamiento con paginación y datos reales."
+  explanation: "Una solución debe responder al caso de uso y verificarse; cambiar todas las relaciones a `EAGER` suele ocultar el problema y cargar datos innecesarios."
+
+- id: rec-semana-09-codigo
+  topic: arquitectura
+  difficulty: intermedio
+  type: code
+  language: java
+  curriculum: { week: 9, category: code }
+  prompt: "Si una petición coincide con `/admin/**`, ¿qué exige esta regla?"
+  code: |
+    http.authorizeHttpRequests(auth -> auth
+      .requestMatchers("/admin/**").hasRole("ADMIN")
+      .anyRequest().authenticated()
+    );
+  options:
+    - { id: a, text: "Que el usuario esté autenticado, sin importar sus roles" }
+    - { id: b, text: "Que el usuario tenga la autoridad `ROLE_ADMIN`" }
+    - { id: c, text: "Que la petición use necesariamente OAuth2" }
+    - { id: d, text: "Que la ruta sea pública solo para el método GET" }
+  correct: b
+  explanation: "`hasRole(\"ADMIN\")` comprueba normalmente la autoridad con prefijo `ROLE_`. Autenticación y autorización son controles distintos."
+
+- id: rec-semana-09-teoria
+  topic: arquitectura
+  difficulty: intermedio
+  type: concept
+  curriculum: { week: 9, category: theory }
+  prompt: "¿Cuál es la diferencia entre autenticación y autorización?"
+  options:
+    - { id: a, text: "Autenticación comprueba quién es el usuario; autorización decide qué puede hacer" }
+    - { id: b, text: "Autenticación cifra la base de datos; autorización crea usuarios" }
+    - { id: c, text: "Son sinónimos y siempre se implementan en el controlador" }
+    - { id: d, text: "Autorización confirma la contraseña; autenticación asigna roles" }
+  correct: a
+  explanation: "Primero se establece la identidad y después se evalúan permisos o roles para la acción solicitada."
+
+- id: rec-semana-09-entrevista
+  topic: arquitectura
+  difficulty: avanzado
+  type: open
+  curriculum: { week: 9, category: interview }
+  prompt: "¿Cómo protegerías las contraseñas y qué papel tendría un JWT en una API?"
+  modelAnswer: "Almacenaría contraseñas con un algoritmo adaptativo de hashing como BCrypt o Argon2, con salt, nunca en texto claro ni con cifrado reversible. Un JWT firmado puede transportar identidad y claims para autorizar peticiones, pero hay que validar firma, emisor, audiencia y expiración; no sustituye el hashing ni se debe confiar en claims sin validarlos."
+  explanation: "Una buena respuesta distingue hashing de cifrado y explica que JWT requiere gestión segura de claves, expiración y autorización."
+
+- id: rec-semana-11-codigo
+  topic: arquitectura
+  difficulty: avanzado
+  type: code
+  language: java
+  curriculum: { week: 11, category: code }
+  prompt: "¿Qué dependencia de arquitectura introduce esta llamada?"
+  code: |
+    StockResponse stock = stockClient.get()
+      .uri("/stock/{sku}", sku)
+      .retrieve()
+      .body(StockResponse.class);
+  options:
+    - { id: a, text: "Una llamada HTTP síncrona: la operación depende de la respuesta del servicio de stock" }
+    - { id: b, text: "Una publicación asíncrona que no espera respuesta" }
+    - { id: c, text: "Una transacción distribuida entre dos bases de datos" }
+    - { id: d, text: "Una consulta local al repositorio de pedidos" }
+  correct: a
+  explanation: "La llamada obtiene el cuerpo de la respuesta antes de continuar, por lo que introduce latencia y dependencia de disponibilidad del servicio remoto."
+
+- id: rec-semana-11-teoria
+  topic: arquitectura
+  difficulty: intermedio
+  type: concept
+  curriculum: { week: 11, category: theory }
+  prompt: "¿Qué implica la consistencia eventual en un sistema distribuido?"
+  options:
+    - { id: a, text: "Tras dejar de recibir nuevas actualizaciones, las réplicas pueden converger al mismo estado después de un tiempo" }
+    - { id: b, text: "Todas las lecturas ven siempre los cambios de forma inmediata" }
+    - { id: c, text: "Los servicios comparten obligatoriamente una transacción ACID global" }
+    - { id: d, text: "Nunca se pueden producir estados temporalmente distintos" }
+  correct: a
+  explanation: "Puede existir un intervalo en el que los servicios observan estados distintos; el diseño debe contemplar esa demora y sus efectos."
+
+- id: rec-semana-11-entrevista
+  topic: arquitectura
+  difficulty: avanzado
+  type: open
+  curriculum: { week: 11, category: interview }
+  prompt: "¿Qué criterios usarías para decidir si una funcionalidad merece convertirse en microservicio?"
+  modelAnswer: "Evaluaría si tiene una capacidad de negocio y datos coherentes, un ritmo de cambio o requisitos de escalado propios, y si un equipo puede operarla de forma autónoma. Compararía esos beneficios con el coste de red, observabilidad, despliegue, consistencia y soporte; no la separaría solo por organizar paquetes."
+  explanation: "La decisión debe basarse en límites de dominio y necesidades operativas, no solo en tamaño del código."
+
+- id: rec-semana-12-codigo
+  topic: arquitectura
+  difficulty: intermedio
+  type: code
+  language: java
+  curriculum: { week: 12, category: code }
+  prompt: "¿Qué protección proporciona la clave única en este flujo de idempotencia?"
+  code: |
+    Optional<Resultado> previo = repositorio.buscarPorClave(clave);
+    if (previo.isPresent()) {
+      return previo.get();
+    }
+    return repositorio.guardar(clave, procesar(peticion));
+  options:
+    - { id: a, text: "Evita duplicados de forma segura ante concurrencia, siempre que la base imponga unicidad y se gestione el conflicto" }
+    - { id: b, text: "Hace que la llamada de red sea infalible" }
+    - { id: c, text: "Garantiza que `procesar` nunca se ejecute más de una vez sin más mecanismos" }
+    - { id: d, text: "Elimina la necesidad de una transacción" }
+  correct: a
+  explanation: "La búsqueda seguida de guardado tiene una carrera concurrente. Una restricción única en la base de datos actúa como garantía final, y el conflicto debe resolverse devolviendo el resultado ya creado."
+
+- id: rec-semana-12-teoria
+  topic: arquitectura
+  difficulty: intermedio
+  type: concept
+  curriculum: { week: 12, category: theory }
+  prompt: "¿Qué aporta un health check en un contenedor o servicio?"
+  options:
+    - { id: a, text: "Permite comprobar si el proceso está disponible o preparado para recibir tráfico, según el tipo de comprobación" }
+    - { id: b, text: "Reemplaza todas las pruebas automatizadas" }
+    - { id: c, text: "Reinicia siempre el servicio ante cualquier respuesta HTTP 4xx" }
+    - { id: d, text: "Asegura que la aplicación no tenga vulnerabilidades" }
+  correct: a
+  explanation: "Las comprobaciones de liveness y readiness tienen propósitos distintos: detectar un proceso bloqueado frente a decidir si puede recibir tráfico."
+
+- id: rec-semana-12-entrevista
+  topic: arquitectura
+  difficulty: avanzado
+  type: open
+  curriculum: { week: 12, category: interview }
+  prompt: "¿Cómo diseñarías reintentos para una llamada entre servicios sin provocar duplicados ni agravar una caída?"
+  modelAnswer: "Pondría timeout explícito, reintentaría solo fallos transitorios y operaciones seguras, con un número máximo de intentos y backoff con jitter. Para escrituras usaría idempotencia mediante una clave y una garantía persistente; evitaría reintentar errores permanentes y consideraría un circuit breaker si el servicio remoto está degradado."
+  explanation: "Hay que equilibrar recuperación con carga adicional y distinguir errores temporales, seguridad de repetición y límites de tiempo."
+
+- id: rec-semana-03-codigo-02
+  topic: arquitectura
+  difficulty: intermedio
+  type: code
+  language: java
+  curriculum: { week: 3, category: code }
+  prompt: "¿Qué efecto expresa este endpoint cuando se repite con la misma representación?"
+  code: |
+    @PutMapping("/pedidos/{id}")
+    ResponseEntity<Void> reemplazar(
+        @PathVariable long id, @RequestBody PedidoRequest request) {
+      servicio.reemplazar(id, request);
+      return ResponseEntity.noContent().build();
+    }
+  options:
+    - { id: a, text: "Reemplaza el estado del recurso identificado y responde sin cuerpo" }
+    - { id: b, text: "Crea necesariamente un recurso nuevo en cada petición" }
+    - { id: c, text: "Consulta el recurso sin cambiarlo" }
+    - { id: d, text: "Elimina todos los pedidos del cliente" }
+  correct: a
+  explanation: "El contrato del endpoint usa PUT para reemplazar el recurso y devuelve 204. La implementación debe conservar esa semántica."
+
+- id: rec-semana-03-codigo-03
+  topic: arquitectura
+  difficulty: avanzado
+  type: code
+  language: java
+  curriculum: { week: 3, category: code }
+  prompt: "¿Qué información permite encontrar esta anotación en una respuesta de creación?"
+  code: |
+    return ResponseEntity.created(
+      URI.create("/pedidos/" + pedido.id())
+    ).body(pedido);
+  options:
+    - { id: a, text: "La ubicación del recurso creado mediante la cabecera `Location`" }
+    - { id: b, text: "El número de página solicitado" }
+    - { id: c, text: "El token de autenticación del usuario" }
+    - { id: d, text: "La causa de una excepción interna" }
+  correct: a
+  explanation: "`created(URI)` construye una respuesta 201 y señala dónde consultar el recurso."
+
+- id: rec-semana-03-teoria-02
+  topic: arquitectura
+  difficulty: principiante
+  type: concept
+  curriculum: { week: 3, category: theory }
+  prompt: "¿Qué diferencia hay entre `400 Bad Request` y `404 Not Found`?"
+  options:
+    - { id: a, text: "400 indica una petición inválida; 404 indica que no se encontró el recurso solicitado" }
+    - { id: b, text: "400 significa éxito sin cuerpo; 404 significa recurso creado" }
+    - { id: c, text: "Ambos indican siempre un error de base de datos" }
+    - { id: d, text: "404 solo se usa para errores de autenticación" }
+  correct: a
+  explanation: "Los códigos describen causas diferentes: entrada no válida frente a un recurso que no se encuentra."
+
+- id: rec-semana-03-teoria-03
+  topic: arquitectura
+  difficulty: intermedio
+  type: concept
+  curriculum: { week: 3, category: theory }
+  prompt: "¿Para qué sirve un contrato OpenAPI?"
+  options:
+    - { id: a, text: "Describir operaciones, parámetros, cuerpos y respuestas de una API de forma legible por personas y herramientas" }
+    - { id: b, text: "Crear automáticamente las reglas de negocio" }
+    - { id: c, text: "Garantizar la disponibilidad del servidor" }
+    - { id: d, text: "Reemplazar las pruebas de la API" }
+  correct: a
+  explanation: "OpenAPI documenta el contrato y puede alimentar herramientas, pero no garantiza que la implementación lo cumpla."
+
+- id: rec-semana-03-entrevista-02
+  topic: arquitectura
+  difficulty: intermedio
+  type: open
+  curriculum: { week: 3, category: interview }
+  prompt: "¿Cómo diseñarías paginación para una colección grande de pedidos?"
+  modelAnswer: "Expondría parámetros acotados de página o cursor y un orden estable, con tamaño máximo. Documentaría filtros, metadatos de navegación y el comportamiento ante páginas vacías; para grandes volúmenes o escrituras concurrentes valoraría paginación por cursor."
+  explanation: "Una respuesta sólida contempla estabilidad, límites de tamaño y el coste de paginación por offset."
+
+- id: rec-semana-03-entrevista-03
+  topic: arquitectura
+  difficulty: avanzado
+  type: open
+  curriculum: { week: 3, category: interview }
+  prompt: "¿Qué mecanismo propondrías para que un `POST` repetido por timeout no cree dos pedidos?"
+  modelAnswer: "Aceptaría una clave de idempotencia, asociada al cliente y a una huella de la petición. Guardaría clave y resultado de forma atómica con una restricción única; una repetición válida devolvería el resultado previo y una clave reutilizada con otro contenido se rechazaría."
+  explanation: "La solución debe persistir la clave y resolver concurrencia; guardar solo en memoria no basta."
+
+- id: rec-semana-07-codigo-02
+  topic: arquitectura
+  difficulty: intermedio
+  type: code
+  language: java
+  curriculum: { week: 7, category: code }
+  prompt: "¿Qué orden y límite configura esta página?"
+  code: |
+    Pageable pagina = PageRequest.of(
+      0, 20, Sort.by("createdAt").descending());
+    Page<Pedido> resultado = repositorio.findAll(pagina);
+  options:
+    - { id: a, text: "Primera página, hasta 20 pedidos, ordenados por fecha descendente" }
+    - { id: b, text: "Segunda página, hasta 20 pedidos, ordenados por fecha ascendente" }
+    - { id: c, text: "Todos los pedidos en orden aleatorio" }
+    - { id: d, text: "Primera página de 20 clientes" }
+  correct: a
+  explanation: "El índice de página empieza en cero; `descending` pone primero las fechas más recientes."
+
+- id: rec-semana-07-codigo-03
+  topic: arquitectura
+  difficulty: avanzado
+  type: code
+  language: java
+  curriculum: { week: 7, category: code }
+  prompt: "¿Qué garantiza que una migración Flyway ya aplicada no se edite y se vuelva a ejecutar con otro contenido?"
+  code: |
+    V1__crear_tablas_pedidos.sql
+    V2__indice_pedido_cliente.sql
+  options:
+    - { id: a, text: "Flyway registra versión y checksum; se añade una nueva migración para cambiar el esquema" }
+    - { id: b, text: "Flyway restaura automáticamente una copia de seguridad" }
+    - { id: c, text: "Los nombres de archivo impiden cualquier cambio manual" }
+    - { id: d, text: "La base de datos ignora todas las migraciones anteriores" }
+  correct: a
+  explanation: "Flyway compara el checksum aplicado. Los cambios posteriores se expresan con una nueva migración versionada."
+
+- id: rec-semana-07-teoria-02
+  topic: arquitectura
+  difficulty: intermedio
+  type: concept
+  curriculum: { week: 7, category: theory }
+  prompt: "¿Qué diferencia hay entre `flush` y `commit`?"
+  options:
+    - { id: a, text: "`flush` sincroniza cambios pendientes con la base; `commit` confirma la transacción" }
+    - { id: b, text: "`flush` confirma siempre la transacción y `commit` solo vacía la memoria" }
+    - { id: c, text: "Son operaciones equivalentes en cualquier contexto" }
+    - { id: d, text: "`flush` revierte los cambios pendientes" }
+  correct: a
+  explanation: "Un flush puede ejecutar SQL antes del final de la transacción, pero los cambios aún pueden revertirse antes del commit."
+
+- id: rec-semana-07-teoria-03
+  topic: arquitectura
+  difficulty: avanzado
+  type: concept
+  curriculum: { week: 7, category: theory }
+  prompt: "¿Por qué puede ser problemático combinar `JOIN FETCH` de una colección con paginación?"
+  options:
+    - { id: a, text: "Las filas duplicadas por la colección pueden hacer que el límite SQL no corresponda a páginas de entidades" }
+    - { id: b, text: "El `JOIN FETCH` desactiva todas las transacciones" }
+    - { id: c, text: "La paginación solo funciona con entidades sin clave primaria" }
+    - { id: d, text: "Hibernate elimina las filas duplicadas de la base" }
+  correct: a
+  explanation: "Una colección produce varias filas por raíz y puede distorsionar el límite. A menudo conviene paginar IDs y cargar relaciones aparte."
+
+- id: rec-semana-07-entrevista-02
+  topic: arquitectura
+  difficulty: avanzado
+  type: open
+  curriculum: { week: 7, category: interview }
+  prompt: "¿Cómo investigarías que un cambio de una entidad no se guardó?"
+  modelAnswer: "Comprobaría si la entidad sigue gestionada, si el método participa en una transacción activa y si hubo flush/commit o rollback. Revisaría el SQL y el estado de la transacción, además de reglas de rollback, excepciones capturadas y si se cruzó un límite de proxy transaccional."
+  explanation: "Investiga el ciclo de vida y la transacción en vez de añadir `save` a ciegas."
+
+- id: rec-semana-07-entrevista-03
+  topic: arquitectura
+  difficulty: intermedio
+  type: open
+  curriculum: { week: 7, category: interview }
+  prompt: "¿Qué diferencia práctica hay entre `Page`, `Slice` y devolver una lista limitada?"
+  modelAnswer: "`Page` incluye metadatos y normalmente una consulta de recuento total; `Slice` indica si hay una página siguiente sin calcular necesariamente el total; una lista limitada devuelve solo resultados y el cliente debe conocer otra forma de navegar. Elegiría según necesite el total y el coste."
+  explanation: "Compara metadatos y consultas adicionales, no solo el tipo de retorno."
+
+- id: rec-semana-09-codigo-02
+  topic: arquitectura
+  difficulty: intermedio
+  type: code
+  language: java
+  curriculum: { week: 9, category: code }
+  prompt: "¿Por qué se verifica la contraseña con `matches` y no comparando el texto almacenado?"
+  code: |
+    if (encoder.matches(passwordRecibida, hashGuardado)) {
+      autenticar(usuario);
+    }
+  options:
+    - { id: a, text: "Porque el hash incorpora parámetros y salt, y `matches` verifica la entrada sin guardar la contraseña en claro" }
+    - { id: b, text: "Porque BCrypt cifra la contraseña de forma reversible" }
+    - { id: c, text: "Porque `matches` obtiene el rol del usuario" }
+    - { id: d, text: "Porque el hash siempre es igual para cualquier contraseña" }
+  correct: a
+  explanation: "Los algoritmos adaptativos usan salt y parámetros; la verificación se hace mediante la API del encoder."
+
+- id: rec-semana-09-codigo-03
+  topic: arquitectura
+  difficulty: avanzado
+  type: code
+  language: java
+  curriculum: { week: 9, category: code }
+  prompt: "¿Qué valida esta configuración de un token firmado?"
+  code: |
+    Jwt jwt = decoder.decode(token);
+    if (!jwt.getAudience().contains("pedidos-api")) {
+      throw new JwtException("audience inválida");
+    }
+  options:
+    - { id: a, text: "Que el token está dirigido a esta API, además de las validaciones configuradas en el decoder" }
+    - { id: b, text: "Que la contraseña se guardó con BCrypt" }
+    - { id: c, text: "Que la petición cumple CORS" }
+    - { id: d, text: "Que el usuario tiene automáticamente el rol ADMIN" }
+  correct: a
+  explanation: "La audiencia evita aceptar un token emitido para otro destinatario. Firma, emisor y expiración también deben validarse."
+
+- id: rec-semana-09-teoria-02
+  topic: arquitectura
+  difficulty: principiante
+  type: concept
+  curriculum: { week: 9, category: theory }
+  prompt: "¿Por qué se prefiere hashing adaptativo frente a cifrado reversible para contraseñas?"
+  options:
+    - { id: a, text: "Porque permite verificar una contraseña sin poder recuperar el texto original y encarece ataques de fuerza bruta" }
+    - { id: b, text: "Porque permite enviar la contraseña por HTTP sin TLS" }
+    - { id: c, text: "Porque el servidor puede descifrarla para mostrarla al usuario" }
+    - { id: d, text: "Porque el hashing elimina la necesidad de autenticación" }
+  correct: a
+  explanation: "Un hash de contraseña adaptativo con salt dificulta ataques offline; TLS sigue siendo necesario al transportar credenciales."
+
+- id: rec-semana-09-teoria-03
+  topic: arquitectura
+  difficulty: intermedio
+  type: concept
+  curriculum: { week: 9, category: theory }
+  prompt: "¿Cuándo protege CSRF principalmente a una aplicación web?"
+  options:
+    - { id: a, text: "Cuando el navegador adjunta automáticamente credenciales, como cookies, a peticiones que cambian estado" }
+    - { id: b, text: "Cuando una API recibe únicamente tokens bearer en la cabecera y no usa cookies" }
+    - { id: c, text: "Cuando se valida el formato de JSON" }
+    - { id: d, text: "Cuando una contraseña se almacena con hashing" }
+  correct: a
+  explanation: "CSRF explota credenciales que el navegador envía automáticamente. La estrategia depende del tipo de cliente y autenticación."
+
+- id: rec-semana-09-entrevista-02
+  topic: arquitectura
+  difficulty: avanzado
+  type: open
+  curriculum: { week: 9, category: interview }
+  prompt: "¿Qué comprobaciones harías al aceptar un JWT como bearer token?"
+  modelAnswer: "Validaría firma con una clave confiable, algoritmo permitido, emisor, audiencia, expiración y claims requeridos. Mapearía claims a autoridades de forma controlada y protegería las claves; no confiaría en el contenido solo porque el token se puede decodificar."
+  explanation: "Decodificar no equivale a verificar: firma, claims y política de autorización deben comprobarse."
+
+- id: rec-semana-09-entrevista-03
+  topic: arquitectura
+  difficulty: intermedio
+  type: open
+  curriculum: { week: 9, category: interview }
+  prompt: "¿Cómo decidirías si una API necesita CORS y qué no resuelve CORS?"
+  modelAnswer: "Lo configuraría si un navegador debe permitir que un frontend de otro origen lea respuestas, restringiendo orígenes, métodos y cabeceras a lo necesario. CORS no autentica al usuario ni bloquea clientes no navegador; tampoco sustituye CSRF, autorización o TLS."
+  explanation: "Distingue la política del navegador de los controles de seguridad del servidor."
+
+- id: rec-semana-11-codigo-02
+  topic: arquitectura
+  difficulty: intermedio
+  type: code
+  language: java
+  curriculum: { week: 11, category: code }
+  prompt: "¿Qué límite temporal impone esta configuración?"
+  code: |
+    HttpClient client = HttpClient.newBuilder()
+      .connectTimeout(Duration.ofSeconds(2))
+      .build();
+  options:
+    - { id: a, text: "Un máximo de dos segundos para establecer la conexión, no necesariamente para completar toda la respuesta" }
+    - { id: b, text: "Un máximo de dos reintentos ante cualquier fallo" }
+    - { id: c, text: "Un máximo de dos segundos para procesar la lógica de negocio local" }
+    - { id: d, text: "Una garantía de que el servicio remoto siempre estará disponible" }
+  correct: a
+  explanation: "`connectTimeout` limita el establecimiento de conexión. El timeout total de la petición debe configurarse por separado."
+
+- id: rec-semana-11-codigo-03
+  topic: arquitectura
+  difficulty: avanzado
+  type: code
+  language: java
+  curriculum: { week: 11, category: code }
+  prompt: "¿Qué acoplamiento introduce esta composición de servicios?"
+  code: |
+    public Pedido crear(Comando comando) {
+      Pedido pedido = pedidos.guardar(comando);
+      stock.reservar(pedido.lineas());
+      pagos.cobrar(pedido.total());
+      return pedido;
+    }
+  options:
+    - { id: a, text: "La operación depende síncronamente de stock y pagos y puede quedar parcial si una llamada falla" }
+    - { id: b, text: "Las llamadas se ejecutan siempre en segundo plano" }
+    - { id: c, text: "Los servicios comparten una transacción ACID automáticamente" }
+    - { id: d, text: "El código garantiza consistencia eventual sin mecanismos adicionales" }
+  correct: a
+  explanation: "Las llamadas locales o remotas no crean una transacción distribuida implícita; hay que diseñar compensación o consistencia."
+
+- id: rec-semana-11-teoria-02
+  topic: arquitectura
+  difficulty: principiante
+  type: concept
+  curriculum: { week: 11, category: theory }
+  prompt: "¿Qué principio ayuda a mantener la autonomía de datos de un microservicio?"
+  options:
+    - { id: a, text: "Que el servicio sea responsable de sus datos y otros servicios accedan mediante contratos" }
+    - { id: b, text: "Que todos los servicios consulten directamente todas las tablas" }
+    - { id: c, text: "Que todos los servicios compartan una transacción global" }
+    - { id: d, text: "Que cada petición cree una base de datos nueva" }
+  correct: a
+  explanation: "La propiedad de datos clara reduce acoplamiento y permite que un servicio evolucione su almacenamiento."
+
+- id: rec-semana-11-teoria-03
+  topic: arquitectura
+  difficulty: intermedio
+  type: concept
+  curriculum: { week: 11, category: theory }
+  prompt: "¿Qué suele ser una ventaja de comunicación asíncrona frente a una llamada HTTP síncrona?"
+  options:
+    - { id: a, text: "El productor puede desacoplarse temporalmente de la disponibilidad inmediata del consumidor" }
+    - { id: b, text: "Elimina la necesidad de manejar duplicados" }
+    - { id: c, text: "Garantiza que los mensajes se procesen una sola vez" }
+    - { id: d, text: "Evita diseñar contratos entre servicios" }
+  correct: a
+  explanation: "La asincronía amortigua disponibilidad y picos, pero requiere manejar entrega, orden, idempotencia y observabilidad."
+
+- id: rec-semana-11-entrevista-02
+  topic: arquitectura
+  difficulty: avanzado
+  type: open
+  curriculum: { week: 11, category: interview }
+  prompt: "¿Qué fallos debes contemplar en una integración HTTP síncrona entre microservicios?"
+  modelAnswer: "Timeouts, errores transitorios y permanentes, saturación, respuestas inválidas y caídas parciales. Definiría timeouts, límites de concurrencia y reintentos seguros y acotados; mediría latencia y errores, y diseñaría qué respuesta o degradación ofrecer al usuario."
+  explanation: "Una llamada remota falla de formas distintas a una llamada local y requiere políticas explícitas."
+
+- id: rec-semana-11-entrevista-03
+  topic: arquitectura
+  difficulty: intermedio
+  type: open
+  curriculum: { week: 11, category: interview }
+  prompt: "¿Qué consecuencias tiene que cada microservicio sea dueño de sus datos?"
+  modelAnswer: "Los otros servicios no deberían leer o escribir directamente sus tablas; consumen contratos o eventos. Eso permite evolucionar el esquema de forma autónoma, pero obliga a coordinar consultas entre dominios y aceptar consistencia eventual en algunos flujos."
+  explanation: "Relaciona autonomía con costes de integración y consistencia."
+
+- id: rec-semana-12-codigo-02
+  topic: arquitectura
+  difficulty: intermedio
+  type: code
+  language: java
+  curriculum: { week: 12, category: code }
+  prompt: "¿Por qué el intento se limita a tres ejecuciones?"
+  code: |
+    for (int intento = 1; intento <= 3; intento++) {
+      try {
+        return cliente.llamar();
+      } catch (FalloTransitorio error) {
+        if (intento == 3) throw error;
+        esperar(backoffConJitter(intento));
+      }
+    }
+    throw new IllegalStateException();
+  options:
+    - { id: a, text: "Para acotar carga y latencia; solo reintenta fallos clasificados como transitorios" }
+    - { id: b, text: "Para garantizar que la llamada tendrá éxito" }
+    - { id: c, text: "Para reintentar indefinidamente" }
+    - { id: d, text: "Para convertir un error permanente en uno transitorio" }
+  correct: a
+  explanation: "Los reintentos deben ser acotados, selectivos y con espera; no garantizan éxito y pueden amplificar una caída."
+
+- id: rec-semana-12-codigo-03
+  topic: arquitectura
+  difficulty: avanzado
+  type: code
+  language: java
+  curriculum: { week: 12, category: code }
+  prompt: "¿Qué comprueba una condición de readiness en un servicio?"
+  code: |
+    if (!baseDeDatosDisponible()) {
+      return Health.down().withDetail("db", "unavailable").build();
+    }
+    return Health.up().build();
+  options:
+    - { id: a, text: "Si el servicio está preparado para recibir tráfico que necesita la base de datos" }
+    - { id: b, text: "Si el proceso debe reiniciarse siempre" }
+    - { id: c, text: "Si una petición concreta está autenticada" }
+    - { id: d, text: "Si el código ha pasado todas las pruebas unitarias" }
+  correct: a
+  explanation: "Readiness informa si se debe enviar tráfico; liveness ayuda a decidir si un proceso atascado debe reiniciarse."
+
+- id: rec-semana-12-teoria-02
+  topic: arquitectura
+  difficulty: principiante
+  type: concept
+  curriculum: { week: 12, category: theory }
+  prompt: "¿Qué función cumple un pipeline de CI?"
+  options:
+    - { id: a, text: "Ejecutar comprobaciones automatizadas y producir artefactos de forma repetible al integrar cambios" }
+    - { id: b, text: "Reemplazar el control de versiones" }
+    - { id: c, text: "Garantizar por sí solo que el diseño sea correcto" }
+    - { id: d, text: "Ejecutar código únicamente en el ordenador del desarrollador" }
+  correct: a
+  explanation: "CI proporciona feedback reproducible mediante compilación, lint y pruebas; no sustituye el diseño ni la revisión."
+
+- id: rec-semana-12-teoria-03
+  topic: arquitectura
+  difficulty: intermedio
+  type: concept
+  curriculum: { week: 12, category: theory }
+  prompt: "¿Por qué un reintento de una escritura necesita considerar idempotencia?"
+  options:
+    - { id: a, text: "Porque el primer intento puede haberse aplicado aunque el cliente no recibiera la respuesta" }
+    - { id: b, text: "Porque un timeout siempre cancela la operación en el servidor" }
+    - { id: c, text: "Porque los reintentos eliminan automáticamente duplicados" }
+    - { id: d, text: "Porque las operaciones de lectura nunca pueden expirar" }
+  correct: a
+  explanation: "Tras un timeout, el resultado puede ser desconocido. Una clave idempotente permite resolver la repetición sin duplicar efectos."
+
+- id: rec-semana-12-entrevista-02
+  topic: arquitectura
+  difficulty: intermedio
+  type: open
+  curriculum: { week: 12, category: interview }
+  prompt: "¿Qué etapas incluirías en un pipeline de CI para una API Java?"
+  modelAnswer: "Compilaría y ejecutaría análisis estático, pruebas unitarias y de integración con dependencias aisladas; después construiría un artefacto o imagen reproducible. Publicaría artefactos solo si las comprobaciones pasan y mantendría secretos fuera del código y de los logs."
+  explanation: "Describe una secuencia verificable y segura, no solo una etapa de despliegue."
+
+- id: rec-semana-12-entrevista-03
+  topic: arquitectura
+  difficulty: avanzado
+  type: open
+  curriculum: { week: 12, category: interview }
+  prompt: "¿Cómo distinguirías liveness de readiness y qué harías si la base de datos está temporalmente caída?"
+  modelAnswer: "Readiness indica si la instancia debe recibir tráfico; liveness indica si el proceso está vivo y puede recuperarse. Una caída de base puede volver la instancia no lista sin reiniciar procesos sanos; evitaría checks que generen carga excesiva y definiría alertas y recuperación."
+  explanation: "No conviene usar una dependencia externa fallida para reiniciar en bucle un proceso que está funcionando."

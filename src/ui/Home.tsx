@@ -3,11 +3,28 @@ import { computeStats, dailyStreak, failedQuestions } from '../core/history.ts';
 import { CHALLENGE_SIZE, countMatching } from '../core/selection.ts';
 import { sessionResult } from '../core/session.ts';
 import { parseProgress, type LoadStatus } from '../core/storage.ts';
-import type { Bank, ChallengeFilters, Difficulty, Progress, Session, Topic } from '../core/types.ts';
-import { DIFFICULTIES, DIFFICULTY_LABELS, MODE_LABELS, TOPICS, TOPIC_LABELS } from './labels.ts';
+import type {
+  Bank,
+  ChallengeFilters,
+  CurriculumCategory,
+  CurriculumFilters,
+  Difficulty,
+  Progress,
+  Session,
+  Topic,
+} from '../core/types.ts';
+import {
+  CURRICULUM_CATEGORY_LABELS,
+  DIFFICULTIES,
+  DIFFICULTY_LABELS,
+  MODE_LABELS,
+  TOPICS,
+  TOPIC_LABELS,
+} from './labels.ts';
 import { Icon } from './Icon.tsx';
 import { downloadProgress } from './progressFile.ts';
 import { SaveFailedNotice } from './QuestionParts.tsx';
+import { countCurriculumMatching } from '../core/selection.ts';
 
 const STATUS_NOTICES: Partial<Record<LoadStatus, string>> = {
   corrupt: 'No se ha podido leer el progreso guardado, así que empiezas de cero.',
@@ -20,6 +37,7 @@ const percent = (accuracy: number | null) => (accuracy === null ? '—' : `${Mat
 
 interface HomeProps {
   bank: Bank;
+  curriculumBank: Bank;
   progress: Progress;
   active: Session | null;
   status: LoadStatus;
@@ -27,6 +45,7 @@ interface HomeProps {
   onStartMixed: () => void;
   onStartFiltered: (filters: ChallengeFilters) => void;
   onStartReview: (filters: ChallengeFilters) => void;
+  onStartCurriculum: (filters: CurriculumFilters, failedOnly: boolean) => void;
   onResume: () => void;
   onDiscard: () => void;
   onReset: () => void;
@@ -40,6 +59,7 @@ const IMPORT_ERRORS: Partial<Record<LoadStatus, string>> = {
 
 export function Home({
   bank,
+  curriculumBank,
   progress,
   active,
   status,
@@ -47,6 +67,7 @@ export function Home({
   onStartMixed,
   onStartFiltered,
   onStartReview,
+  onStartCurriculum,
   onResume,
   onDiscard,
   onReset,
@@ -55,6 +76,9 @@ export function Home({
   const [topic, setTopic] = useState<Topic | ''>('');
   const [difficulty, setDifficulty] = useState<Difficulty | ''>('');
   const [reviewTopic, setReviewTopic] = useState<Topic | ''>('');
+  const [curriculumBlock, setCurriculumBlock] = useState<'' | 1 | 2 | 3>('');
+  const [curriculumWeek, setCurriculumWeek] = useState<number | ''>('');
+  const [curriculumCategory, setCurriculumCategory] = useState<CurriculumCategory | ''>('');
   const [confirmingReset, setConfirmingReset] = useState(false);
   const [pendingImport, setPendingImport] = useState<Progress | null>(null);
   const [importMessage, setImportMessage] = useState<{ text: string; failed: boolean } | null>(null);
@@ -109,6 +133,25 @@ export function Home({
   const available = countMatching(bank, filters);
   const failed = failedQuestions(progress.sessions, bank);
   const failedCount = failed.length;
+  const curriculumFilters: CurriculumFilters = {
+    ...(curriculumBlock ? { block: curriculumBlock } : {}),
+    ...(curriculumWeek ? { week: curriculumWeek } : {}),
+    ...(curriculumCategory ? { category: curriculumCategory } : {}),
+  };
+  const curriculumMatching = curriculumBank.filter((question) => {
+    const metadata = question.curriculum;
+    if (!metadata) return false;
+    return (
+      (!curriculumBlock || Math.ceil(metadata.week / 4) === curriculumBlock) &&
+      (!curriculumWeek || metadata.week === curriculumWeek) &&
+      (!curriculumCategory || metadata.category === curriculumCategory)
+    );
+  });
+  const curriculumQuestionIds = new Set(curriculumMatching.map((question) => question.id));
+  const curriculumFailedCount = failedQuestions(progress.sessions, curriculumBank).filter(({ questionId }) =>
+    curriculumQuestionIds.has(questionId),
+  ).length;
+  const curriculumAvailable = countCurriculumMatching(curriculumBank, curriculumFilters);
   const topicOf = new Map(bank.map((question) => [question.id, question.topic]));
   const failedInTopic = (value: Topic) => failed.filter(({ questionId }) => topicOf.get(questionId) === value).length;
   // El tema elegido puede quedarse sin fallos al repasarlo.
@@ -168,6 +211,109 @@ export function Home({
           Empezar reto rápido
           <Icon name="arrow" />
         </button>
+      </section>
+
+      <section className="card curriculum-card" aria-labelledby="curriculum-title">
+        <h2 id="curriculum-title">Repaso de Reciclaje</h2>
+        <p>
+          Practica únicamente los tres primeros bloques del plan: semanas 1–12. Este apartado no mezcla sus
+          preguntas con los retos generales.
+        </p>
+        <p className="help">
+          El bloque 3 se basa provisionalmente en el resumen del plan; sus preguntas podrán afinarse cuando estén
+          preparadas las fichas semanales.
+        </p>
+        <p className="help">
+          Incluye {countCurriculumMatching(curriculumBank, {})}{' '}
+          {countCurriculumMatching(curriculumBank, {}) === 1 ? 'pregunta' : 'preguntas'} de código, teoría y
+          entrevista técnica.
+          Las respuestas y el progreso se guardan en este dispositivo.
+        </p>
+        <div className="filters curriculum-filters">
+          <label>
+            Bloque
+            <span className="select">
+              <select
+                value={curriculumBlock}
+                onChange={(event) => {
+                  setCurriculumBlock(event.target.value ? (Number(event.target.value) as 1 | 2 | 3) : '');
+                  setCurriculumWeek('');
+                }}
+              >
+                <option value="">Los tres bloques</option>
+                <option value="1">Bloque 1 · Semanas 1–4</option>
+                <option value="2">Bloque 2 · Semanas 5–8</option>
+                <option value="3">Bloque 3 · Semanas 9–12</option>
+              </select>
+              <Icon name="chevron" />
+            </span>
+          </label>
+          <label>
+            Semana
+            <span className="select">
+              <select
+                value={curriculumWeek}
+                onChange={(event) => setCurriculumWeek(event.target.value ? Number(event.target.value) : '')}
+              >
+                <option value="">Todas las semanas</option>
+                {Array.from({ length: 12 }, (_, index) => index + 1)
+                  .filter((value) => !curriculumBlock || Math.ceil(value / 4) === curriculumBlock)
+                  .map((value) => (
+                    <option key={value} value={value}>
+                      Semana {value}
+                    </option>
+                  ))}
+              </select>
+              <Icon name="chevron" />
+            </span>
+          </label>
+          <label>
+            Tipo de pregunta
+            <span className="select">
+              <select
+                value={curriculumCategory}
+                onChange={(event) =>
+                  setCurriculumCategory(event.target.value as CurriculumCategory | '')
+                }
+              >
+                <option value="">Todos los tipos</option>
+                {Object.entries(CURRICULUM_CATEGORY_LABELS).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+              <Icon name="chevron" />
+            </span>
+          </label>
+        </div>
+        <p className="help" role="status">
+          {curriculumAvailable === 0
+            ? 'No hay preguntas con estos filtros.'
+            : `${curriculumAvailable} ${curriculumAvailable === 1 ? 'pregunta disponible' : 'preguntas disponibles'}; el reto incluirá hasta 10.`}
+        </p>
+        <div className="actions">
+          <button
+            type="button"
+            className="button button--primary"
+            disabled={curriculumAvailable === 0}
+            onClick={() => onStartCurriculum(curriculumFilters, false)}
+          >
+            Empezar repaso
+            <Icon name="arrow" />
+          </button>
+          <button
+            type="button"
+            className="button"
+            disabled={curriculumFailedCount === 0}
+            onClick={() => onStartCurriculum(curriculumFilters, true)}
+          >
+            Revisar fallos del temario{curriculumFailedCount > 0 ? ` (${curriculumFailedCount})` : ''}
+          </button>
+        </div>
+        {curriculumFailedCount === 0 && (
+          <p className="help">No hay preguntas falladas en esta selección todavía.</p>
+        )}
       </section>
 
       <div className="home-grid">

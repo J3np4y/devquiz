@@ -27,7 +27,7 @@ export function createSession({ mode, questions, now, rng }: NewSession): Sessio
     startedAt: now,
     currentIndex: 0,
     questions: questions.map((question) => {
-      const ids = question.options.map((option) => option.id);
+      const ids = question.options?.map((option) => option.id) ?? [];
       // «Verdadero» y «Falso» siempre en el mismo orden: barajarlos solo confundiría.
       return { questionId: question.id, optionOrder: question.type === 'truefalse' ? ids : shuffle(ids, rng) };
     }),
@@ -66,15 +66,24 @@ export function answerCurrent(
   question: Question,
   optionId: string,
   now: number,
+  response?: string,
 ): Progress {
   return updateActive(progress, (session) => {
     const current = currentQuestion(session);
-    const validOption = question.options.some((option) => option.id === optionId);
+    const validOption =
+      question.type === 'open'
+        ? optionId === 'remembered' || optionId === 'review'
+        : (question.options ?? []).some((option) => option.id === optionId);
     if (!current || current.answer || current.questionId !== question.id || !validOption) {
       return session;
     }
 
-    const answer = { optionId, correct: optionId === question.correct, at: now };
+    const answer = {
+      optionId,
+      correct: question.type === 'open' ? optionId === 'remembered' : optionId === question.correct,
+      ...(question.type === 'open' && response?.trim() ? { response: response.trim() } : {}),
+      at: now,
+    };
     return {
       ...session,
       questions: session.questions.map((item, index) =>
@@ -117,7 +126,7 @@ export function reconcileActive(progress: Progress, bank: Bank, now: number): Pr
       const question = questionsById.get(item.questionId);
       if (!question) return [];
 
-      const ids = question.options.map((option) => option.id);
+      const ids = question.options?.map((option) => option.id) ?? [];
       const kept = [...new Set(item.optionOrder)].filter((id) => ids.includes(id));
       const added = ids.filter((id) => !kept.includes(id));
       return [{ ...item, optionOrder: [...kept, ...added] }];

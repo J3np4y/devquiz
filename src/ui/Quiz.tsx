@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Session } from '../core/types.ts';
 import { Icon } from './Icon.tsx';
 import { MODE_LABELS, type AppQuestion } from './labels.ts';
@@ -10,7 +10,7 @@ interface QuizProps {
   saveFailed: boolean;
   shortcutsEnabled: boolean;
   onToggleShortcuts: (enabled: boolean) => void;
-  onAnswer: (optionId: string) => void;
+  onAnswer: (optionId: string, response?: string) => void;
   onNext: () => void;
   onExit: () => void;
 }
@@ -27,12 +27,15 @@ export function Quiz({
 }: QuizProps) {
   const item = session.questions[session.currentIndex];
   const answer = item?.answer;
+  const [response, setResponse] = useState(answer?.response ?? '');
+  const [modelAnswerShown, setModelAnswerShown] = useState(Boolean(answer));
+  const isOpen = question.type === 'open';
   const position = session.currentIndex + 1;
   const total = session.questions.length;
   const isLast = position === total;
 
   const options = (item?.optionOrder ?? []).flatMap((id) => {
-    const option = question.options.find((candidate) => candidate.id === id);
+    const option = question.options?.find((candidate) => candidate.id === id);
     return option ? [option] : [];
   });
 
@@ -99,45 +102,109 @@ export function Quiz({
       </h1>
       <CodeBlock question={question} />
 
-      <ol className="options">
-        {options.map((option, index) => {
-          const chosen = answer?.optionId === option.id;
-          const correct = question.correct === option.id;
-          const state = !answer ? '' : correct ? 'option--correct' : chosen ? 'option--wrong' : 'option--muted';
+      {!isOpen && (
+        <ol className="options">
+          {options.map((option, index) => {
+            const chosen = answer?.optionId === option.id;
+            const correct = question.correct === option.id;
+            const state = !answer ? '' : correct ? 'option--correct' : chosen ? 'option--wrong' : 'option--muted';
 
-          return (
-            <li key={option.id}>
-              <button
-                type="button"
-                className={`option ${state}`}
-                disabled={Boolean(answer)}
-                onClick={() => onAnswer(option.id)}
-              >
-                <span className="option-key mono" aria-hidden="true">
-                  {index + 1}
-                </span>
-                <span className={optionClass(question)}>
-                  <RichText text={option.text} />
-                </span>
-                {answer && correct && (
-                  <span className="option-mark">
-                    <Icon name="check" />
-                    Correcta
+            return (
+              <li key={option.id}>
+                <button
+                  type="button"
+                  className={`option ${state}`}
+                  disabled={Boolean(answer)}
+                  onClick={() => onAnswer(option.id)}
+                >
+                  <span className="option-key mono" aria-hidden="true">
+                    {index + 1}
                   </span>
-                )}
-                {answer && chosen && !correct && (
-                  <span className="option-mark">
-                    <Icon name="cross" />
-                    Tu respuesta
+                  <span className={optionClass(question)}>
+                    <RichText text={option.text} />
                   </span>
-                )}
-              </button>
-            </li>
-          );
-        })}
-      </ol>
+                  {answer && correct && (
+                    <span className="option-mark">
+                      <Icon name="check" />
+                      Correcta
+                    </span>
+                  )}
+                  {answer && chosen && !correct && (
+                    <span className="option-mark">
+                      <Icon name="cross" />
+                      Tu respuesta
+                    </span>
+                  )}
+                </button>
+              </li>
+            );
+          })}
+        </ol>
+      )}
 
-      {!answer && (
+      {isOpen ? (
+        <section className="open-answer card" aria-labelledby="open-answer-title">
+          <h2 id="open-answer-title">Pregunta abierta de entrevista</h2>
+          {!answer && (
+            <label htmlFor="open-response">
+              Tu respuesta
+              <textarea
+                id="open-response"
+                rows={5}
+                value={response}
+                onChange={(event) => setResponse(event.target.value)}
+                placeholder="Intenta explicarlo con tus palabras. No se corrige automáticamente."
+              />
+            </label>
+          )}
+          {!modelAnswerShown ? (
+            <button type="button" className="button button--primary" onClick={() => setModelAnswerShown(true)}>
+              Mostrar respuesta orientativa
+            </button>
+          ) : (
+            <>
+              {response.trim() && (
+                <div>
+                  <h3>Tu respuesta</h3>
+                  <p className="open-response-text">{response}</p>
+                </div>
+              )}
+              <div className="feedback">
+                <h3>Respuesta orientativa</h3>
+                <p>
+                  <RichText text={question.modelAnswer ?? ''} />
+                </p>
+              </div>
+              {answer ? (
+                <p className="help" role="status">
+                  {answer.correct
+                    ? 'La has marcado como recordada.'
+                    : 'La has marcado para volver a repasarla.'}
+                </p>
+              ) : (
+                <div className="actions">
+                  <button
+                    type="button"
+                    className="button button--primary"
+                    onClick={() => onAnswer('remembered', response)}
+                  >
+                    La sabía
+                  </button>
+                  <button
+                    type="button"
+                    className="button"
+                    onClick={() => onAnswer('review', response)}
+                  >
+                    Necesito repasarla
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </section>
+      ) : (
+        <>
+          {!answer && (
         // Los atajos de una sola tecla deben poder desactivarse (WCAG 2.1.4).
         <p className="help keyboard-hint">
           <label className="checkbox">
@@ -149,21 +216,23 @@ export function Quiz({
             Responder con las teclas de 1 a {Math.min(options.length, 4)}
           </label>
         </p>
-      )}
+          )}
 
-      <div role="status" className="feedback-region">
-        {answer && (
-          <div className={`feedback ${answer.correct ? 'feedback--correct' : 'feedback--wrong'}`}>
-            <p className="feedback-title">
-              <Icon name={answer.correct ? 'check' : 'cross'} />
-              {answer.correct ? '¡Correcto!' : 'Incorrecto'}
-            </p>
-            <p>
-              <RichText text={question.explanation} />
-            </p>
+          <div role="status" className="feedback-region">
+            {answer && (
+              <div className={`feedback ${answer.correct ? 'feedback--correct' : 'feedback--wrong'}`}>
+                <p className="feedback-title">
+                  <Icon name={answer.correct ? 'check' : 'cross'} />
+                  {answer.correct ? '¡Correcto!' : 'Incorrecto'}
+                </p>
+                <p>
+                  <RichText text={question.explanation} />
+                </p>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </>
+      )}
 
       {answer && (
         <button

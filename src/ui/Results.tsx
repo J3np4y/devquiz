@@ -71,8 +71,8 @@ export function Results({ session, questionsById, failedCount, saveFailed, onRev
           const question = questionsById.get(item.questionId);
           if (!question) return [];
 
-          const chosen = question.options.find((option) => option.id === item.answer?.optionId);
-          const right = question.options.find((option) => option.id === question.correct);
+          const chosen = question.options?.find((option) => option.id === item.answer?.optionId);
+          const right = question.options?.find((option) => option.id === question.correct);
           const isCorrect = item.answer?.correct ?? false;
 
           return [
@@ -86,20 +86,39 @@ export function Results({ session, questionsById, failedCount, saveFailed, onRev
                 <RichText text={question.prompt} />
               </h3>
               <CodeBlock question={question} />
-              <dl className="review-answers">
-                {!isCorrect && (
-                  <div className="review-answer review-answer--wrong">
+              {question.type === 'open' ? (
+                <dl className="review-answers">
+                  <div className="review-answer">
+                    <dt>Tu autoevaluación</dt>
+                    <dd>{isCorrect ? 'La sabía' : 'Necesito repasarla'}</dd>
+                  </div>
+                  <div className="review-answer">
                     <dt>Tu respuesta</dt>
-                    <dd className={optionClass(question)}>
-                      {chosen ? <RichText text={chosen.text} /> : 'Esta opción ya no existe'}
+                    <dd>{item.answer?.response || 'No escribiste una respuesta.'}</dd>
+                  </div>
+                  <div className="review-answer review-answer--correct">
+                    <dt>Respuesta orientativa</dt>
+                    <dd>
+                      <RichText text={question.modelAnswer ?? ''} />
                     </dd>
                   </div>
-                )}
-                <div className="review-answer review-answer--correct">
-                  <dt>{isCorrect ? 'Tu respuesta, correcta' : 'Respuesta correcta'}</dt>
-                  <dd className={optionClass(question)}>{right && <RichText text={right.text} />}</dd>
-                </div>
-              </dl>
+                </dl>
+              ) : (
+                <dl className="review-answers">
+                  {!isCorrect && (
+                    <div className="review-answer review-answer--wrong">
+                      <dt>Tu respuesta</dt>
+                      <dd className={optionClass(question)}>
+                        {chosen ? <RichText text={chosen.text} /> : 'Esta opción ya no existe'}
+                      </dd>
+                    </div>
+                  )}
+                  <div className="review-answer review-answer--correct">
+                    <dt>{isCorrect ? 'Tu respuesta, correcta' : 'Respuesta correcta'}</dt>
+                    <dd className={optionClass(question)}>{right && <RichText text={right.text} />}</dd>
+                  </div>
+                </dl>
+              )}
               <p>
                 <RichText text={question.explanation} />
               </p>

@@ -1,0 +1,267 @@
+- id: rec-semana-02-codigo
+  topic: diseno
+  difficulty: intermedio
+  type: code
+  language: java
+  curriculum: { week: 2, category: code }
+  prompt: "¿Qué principio de diseño aplica mejor este constructor?"
+  code: |
+    class ResumenService {
+      private final RepositorioPedidos pedidos;
+
+      ResumenService(RepositorioPedidos pedidos) {
+        this.pedidos = pedidos;
+      }
+    }
+  options:
+    - { id: a, text: "Depende de una abstracción y recibe la dependencia desde fuera" }
+    - { id: b, text: "Crea una instancia concreta del repositorio dentro del servicio" }
+    - { id: c, text: "Hace que el servicio sea estático" }
+    - { id: d, text: "Elimina la necesidad de probar el servicio" }
+  correct: a
+  explanation: "La inyección por constructor facilita sustituir la implementación y expresa la dependencia. Si `RepositorioPedidos` es una abstracción, aplica DIP."
+
+- id: rec-semana-02-teoria
+  topic: diseno
+  difficulty: principiante
+  type: concept
+  curriculum: { week: 2, category: theory }
+  prompt: "¿Qué significa responsabilidad única en el diseño de una clase?"
+  options:
+    - { id: a, text: "Que tiene una sola razón principal para cambiar" }
+    - { id: b, text: "Que solo puede tener un método público" }
+    - { id: c, text: "Que no puede depender de otras clases" }
+    - { id: d, text: "Que debe implementar una interfaz" }
+  correct: a
+  explanation: "SRP busca agrupar responsabilidades cohesionadas para evitar que cambios de motivos distintos afecten a la misma clase."
+
+- id: rec-semana-02-entrevista
+  topic: diseno
+  difficulty: intermedio
+  type: open
+  curriculum: { week: 2, category: interview }
+  prompt: "Explica la diferencia entre responsabilidad única y abierto/cerrado con un ejemplo breve."
+  modelAnswer: "Responsabilidad única trata de que un módulo tenga una razón principal para cambiar. Abierto/cerrado propone poder ampliar el comportamiento sin modificar repetidamente el código estable; por ejemplo, añadir una nueva estrategia de cálculo mediante otra implementación de una interfaz."
+  explanation: "No basta con recitar las siglas: una respuesta sólida distingue los objetivos y da un ejemplo que no añada abstracciones innecesarias."
+
+- id: rec-semana-10-codigo
+  topic: diseno
+  difficulty: intermedio
+  type: code
+  language: java
+  curriculum: { week: 10, category: code }
+  prompt: "¿Qué ventaja aporta que el módulo de pedidos dependa de `Notificador` y no de `EmailNotificador`?"
+  code: |
+    interface Notificador {
+      void enviar(String destino, String mensaje);
+    }
+
+    class PedidoService {
+      private final Notificador notificador;
+
+      PedidoService(Notificador notificador) {
+        this.notificador = notificador;
+      }
+    }
+  options:
+    - { id: a, text: "Permite cambiar o sustituir el mecanismo de notificación sin acoplar la lógica de pedidos a uno concreto" }
+    - { id: b, text: "Garantiza que nunca habrá errores de red" }
+    - { id: c, text: "Convierte la aplicación automáticamente en microservicios" }
+    - { id: d, text: "Evita que sea necesario configurar dependencias" }
+  correct: a
+  explanation: "El módulo usa un contrato y recibe su implementación. Eso reduce acoplamiento, aunque no justifica crear interfaces para cada clase sin una necesidad."
+
+- id: rec-semana-10-teoria
+  topic: diseno
+  difficulty: intermedio
+  type: concept
+  curriculum: { week: 10, category: theory }
+  prompt: "¿Qué describe mejor un monolito modular?"
+  options:
+    - { id: a, text: "Una aplicación desplegada como una unidad, organizada en módulos con límites y dependencias explícitos" }
+    - { id: b, text: "Una aplicación sin módulos que comparte todas sus clases" }
+    - { id: c, text: "Un conjunto de microservicios que comparte una base de datos" }
+    - { id: d, text: "Una aplicación que no puede usar una base de datos" }
+  correct: a
+  explanation: "Un monolito modular conserva un despliegue único y busca límites internos claros, lo que permite evolucionar sin asumir el coste distribuido."
+
+- id: rec-semana-10-entrevista
+  topic: diseno
+  difficulty: avanzado
+  type: open
+  curriculum: { week: 10, category: interview }
+  prompt: "Antes de separar un monolito en microservicios, ¿qué límites y señales revisarías?"
+  modelAnswer: "Buscaría capacidades de negocio cohesionadas, propiedad clara de los datos, cambios que evolucionan juntos y dependencias entre módulos. También mediría el coste operativo y los problemas actuales; primero intentaría hacer explícitos y probar los límites del monolito modular."
+  explanation: "Una respuesta equilibrada evita tratar los microservicios como objetivo por sí mismo y considera equipo, despliegue, datos y operación."
+
+- id: rec-semana-02-codigo-02
+  topic: diseno
+  difficulty: intermedio
+  type: code
+  language: java
+  curriculum: { week: 2, category: code }
+  prompt: "¿Qué ventaja de diseño aporta esta estrategia?"
+  code: |
+    interface Descuento {
+      BigDecimal aplicar(BigDecimal total);
+    }
+
+    BigDecimal calcular(BigDecimal total, Descuento descuento) {
+      return descuento.aplicar(total);
+    }
+  options:
+    - { id: a, text: "Permite añadir reglas de descuento mediante nuevas implementaciones sin ramificar el cálculo central" }
+    - { id: b, text: "Hace que todas las reglas de descuento sean idénticas" }
+    - { id: c, text: "Garantiza que el resultado nunca sea negativo" }
+    - { id: d, text: "Elimina la necesidad de probar las implementaciones" }
+  correct: a
+  explanation: "El cálculo delega el comportamiento variable en una abstracción; cada regla debe probarse y validar sus propias condiciones."
+
+- id: rec-semana-02-codigo-03
+  topic: diseno
+  difficulty: avanzado
+  type: code
+  language: java
+  curriculum: { week: 2, category: code }
+  prompt: "¿Qué verifica `assertThrows` en esta prueba?"
+  code: |
+    assertThrows(IllegalArgumentException.class,
+      () -> servicio.resumir(List.of()));
+  options:
+    - { id: a, text: "Que la llamada lanza una excepción compatible con `IllegalArgumentException`" }
+    - { id: b, text: "Que la lista tiene al menos un elemento" }
+    - { id: c, text: "Que la llamada termina sin excepción" }
+    - { id: d, text: "Que la prueba ejecuta todas las clases del proyecto" }
+  correct: a
+  explanation: "`assertThrows` falla si no se lanza la excepción esperada; sirve para comprobar el contrato ante una entrada inválida."
+
+- id: rec-semana-02-teoria-02
+  topic: diseno
+  difficulty: intermedio
+  type: concept
+  curriculum: { week: 2, category: theory }
+  prompt: "¿Qué propone el principio de inversión de dependencias?"
+  options:
+    - { id: a, text: "Que los módulos de alto nivel y los de bajo nivel dependan de abstracciones estables" }
+    - { id: b, text: "Que cada clase cree directamente sus dependencias concretas" }
+    - { id: c, text: "Que todas las dependencias se inviertan en tiempo de ejecución" }
+    - { id: d, text: "Que la lógica de negocio dependa del formato JSON" }
+  correct: a
+  explanation: "DIP dirige dependencias hacia contratos estables; la inyección de dependencias es una técnica habitual, no el principio completo."
+
+- id: rec-semana-02-teoria-03
+  topic: diseno
+  difficulty: intermedio
+  type: concept
+  curriculum: { week: 2, category: theory }
+  prompt: "¿Qué pide el principio de sustitución de Liskov?"
+  options:
+    - { id: a, text: "Que una implementación pueda usarse donde se espera su tipo base sin romper las expectativas del contrato" }
+    - { id: b, text: "Que toda clase herede de una clase común" }
+    - { id: c, text: "Que una subclase pueda debilitar cualquier precondición" }
+    - { id: d, text: "Que las interfaces tengan un único método por obligación" }
+  correct: a
+  explanation: "Las subclases deben respetar el comportamiento esperado por quienes consumen el tipo base."
+
+- id: rec-semana-02-entrevista-02
+  topic: diseno
+  difficulty: intermedio
+  type: open
+  curriculum: { week: 2, category: interview }
+  prompt: "¿Cómo decidirías si conviene introducir una interfaz para una dependencia?"
+  modelAnswer: "La introduciría cuando represente un contrato útil entre responsabilidades, permita variar una implementación o facilite aislar una frontera que necesito probar. No crearía una interfaz por cada clase de forma automática si solo añade indirección sin una necesidad concreta."
+  explanation: "Valora la abstracción por el problema que resuelve y reconoce el coste de complejidad adicional."
+
+- id: rec-semana-02-entrevista-03
+  topic: diseno
+  difficulty: avanzado
+  type: open
+  curriculum: { week: 2, category: interview }
+  prompt: "¿Cómo probarías un servicio que depende de un repositorio sin acoplar la prueba a la base de datos?"
+  modelAnswer: "Inyectaría un doble del repositorio, configuraría los resultados necesarios y probaría reglas y casos límite del servicio. Verificaría interacciones solo cuando formen parte del comportamiento importante; dejaría consultas y mapeos reales para pruebas de integración."
+  explanation: "Distingue prueba unitaria de integración y evita comprobar detalles internos que no pertenecen al contrato."
+
+- id: rec-semana-10-codigo-02
+  topic: diseno
+  difficulty: intermedio
+  type: code
+  language: java
+  curriculum: { week: 10, category: code }
+  prompt: "¿Qué indica esta dependencia entre módulos?"
+  code: |
+    class FacturacionService {
+      private final PedidoRepository pedidos;
+      private final PagoRepository pagos;
+    }
+  options:
+    - { id: a, text: "Facturación accede directamente a datos de otros dominios y puede estar acoplada a sus modelos" }
+    - { id: b, text: "Los módulos son completamente independientes" }
+    - { id: c, text: "La aplicación ya es un microservicio" }
+    - { id: d, text: "La relación garantiza consistencia distribuida" }
+  correct: a
+  explanation: "La dependencia directa de repositorios ajenos puede filtrar detalles de persistencia entre módulos; conviene definir una frontera explícita."
+
+- id: rec-semana-10-codigo-03
+  topic: diseno
+  difficulty: avanzado
+  type: code
+  language: java
+  curriculum: { week: 10, category: code }
+  prompt: "¿Qué problema evita exponer esta operación del módulo de pedidos en vez de su repositorio?"
+  code: |
+    interface Pedidos {
+      Optional<ResumenPedido> buscarResumen(long pedidoId);
+    }
+  options:
+    - { id: a, text: "Permite que otros módulos dependan de una capacidad de negocio y no del esquema persistente interno" }
+    - { id: b, text: "Hace imposible que el módulo cambie su implementación" }
+    - { id: c, text: "Evita validar los datos de entrada" }
+    - { id: d, text: "Garantiza que la consulta nunca sea lenta" }
+  correct: a
+  explanation: "Una API de módulo expresa qué necesita el consumidor sin exponer tablas ni repositorios internos."
+
+- id: rec-semana-10-teoria-02
+  topic: diseno
+  difficulty: principiante
+  type: concept
+  curriculum: { week: 10, category: theory }
+  prompt: "¿Qué ventaja ofrece definir límites entre módulos antes de extraer servicios?"
+  options:
+    - { id: a, text: "Ayuda a descubrir responsabilidades, dependencias y propiedad de datos dentro del despliegue actual" }
+    - { id: b, text: "Elimina la necesidad de pruebas" }
+    - { id: c, text: "Obliga a que cada módulo tenga una base de datos distinta" }
+    - { id: d, text: "Reduce siempre el número de clases" }
+  correct: a
+  explanation: "Los límites modulares permiten validar cohesión y acoplamiento antes de asumir comunicación y operación distribuidas."
+
+- id: rec-semana-10-teoria-03
+  topic: diseno
+  difficulty: intermedio
+  type: concept
+  curriculum: { week: 10, category: theory }
+  prompt: "¿Qué señal sugiere que dos capacidades podrían pertenecer al mismo módulo?"
+  options:
+    - { id: a, text: "Cambian juntas y comparten reglas de negocio estrechamente relacionadas" }
+    - { id: b, text: "Usan el mismo lenguaje de programación" }
+    - { id: c, text: "Tienen el mismo número de clases" }
+    - { id: d, text: "Se despliegan en la misma región cloud" }
+  correct: a
+  explanation: "La cohesión de negocio y el ritmo de cambio son señales más útiles que el tamaño o la tecnología usada."
+
+- id: rec-semana-10-entrevista-02
+  topic: diseno
+  difficulty: avanzado
+  type: open
+  curriculum: { week: 10, category: interview }
+  prompt: "¿Cómo evitarías que un monolito modular termine convertido en un conjunto de paquetes sin límites reales?"
+  modelAnswer: "Definiría APIs públicas pequeñas por módulo, restringiría accesos a paquetes internos y documentaría quién posee cada dato. Añadiría pruebas o reglas de arquitectura que detecten dependencias prohibidas y revisaría los flujos que cruzan módulos."
+  explanation: "Un límite debe ser visible y verificable; nombrar paquetes por sí solo no evita el acoplamiento."
+
+- id: rec-semana-10-entrevista-03
+  topic: diseno
+  difficulty: intermedio
+  type: open
+  curriculum: { week: 10, category: interview }
+  prompt: "¿Qué trade-offs considerarías al compartir una base de datos entre módulos?"
+  modelAnswer: "Compartir una base puede simplificar transacciones y operación al principio, pero si varios módulos escriben directamente las mismas tablas se acoplan al esquema y a los cambios. Definiría propiedad de tablas, APIs de acceso y reglas de migración antes de plantear separar físicamente los datos."
+  explanation: "La respuesta debe considerar consistencia y simplicidad local frente a acoplamiento del modelo y evolución."

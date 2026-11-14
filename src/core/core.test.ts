@@ -5,6 +5,9 @@ import { computeStats, dailyStreak, failedQuestions, reviewDueAt } from './histo
 import {
   CHALLENGE_SIZE,
   countMatching,
+  countCurriculumMatching,
+  selectCurriculum,
+  selectCurriculumFailures,
   selectFiltered,
   selectMixed,
   selectReview,
@@ -37,6 +40,7 @@ import {
 } from './storage.ts';
 import {
   emptyProgress,
+  SCHEMA_VERSION,
   type ChallengeMode,
   type Difficulty,
   type Progress,
@@ -214,6 +218,48 @@ describe('selectReview', () => {
   });
 });
 
+describe('repaso del temario Reciclaje', () => {
+  const { questions: bank, errors } = loadBank(
+    fileURLToPath(new URL('../../content/reciclaje/', import.meta.url)),
+  );
+
+  it('carga 108 preguntas y permite filtrar por bloque, semana y formato', () => {
+    expect(errors).toEqual([]);
+    expect(bank).toHaveLength(108);
+    expect(countCurriculumMatching(bank, { block: 1 })).toBe(36);
+    expect(countCurriculumMatching(bank, { week: 5 })).toBe(9);
+    expect(countCurriculumMatching(bank, { category: 'interview' })).toBe(36);
+
+    const selected = selectCurriculum(bank, [], seeded(1), { block: 2, category: 'code' });
+    expect(selected).toHaveLength(10);
+    expect(selected.every((question) => question.curriculum?.week !== undefined &&
+      question.curriculum.week >= 5 && question.curriculum.week <= 8 &&
+      question.curriculum.category === 'code')).toBe(true);
+  });
+
+  it('selecciona solo fallos del temario y respeta los filtros', () => {
+    const curriculumFailure = bank.find((question) => question.curriculum?.week === 9);
+    const otherFailure = bank.find((question) => question.curriculum?.week === 1);
+    const sessions = [
+      answered([
+        [curriculumFailure?.id ?? '', false, 1],
+        [otherFailure?.id ?? '', false, 2],
+      ]),
+    ];
+
+    const selected = selectCurriculum(bank, sessions, seeded(2), {
+      block: 3,
+      failedOnly: true,
+    });
+    expect(selected.map((question) => question.id)).toEqual([curriculumFailure?.id]);
+    expect(selectCurriculumFailures(bank, sessions, { block: 3 })).toEqual(selected);
+  });
+
+  it('devuelve una lista vacía al filtrar preguntas falladas que no existen', () => {
+    expect(selectCurriculum(bank, [], seeded(1), { failedOnly: true })).toEqual([]);
+  });
+});
+
 describe('failedQuestions', () => {
   const bank = ['a', 'b'].map((id) => makeQuestion(id));
 
@@ -223,7 +269,7 @@ describe('failedQuestions', () => {
     ]);
   });
 
-  it.each<ChallengeMode>(['mixed', 'filtered', 'review'])('quita la pregunta al acertarla en modo %s', (mode) => {
+  it.each<ChallengeMode>(['mixed', 'filtered', 'review', 'curriculum'])('quita la pregunta al acertarla en modo %s', (mode) => {
     const sessions = [answered([['a', false, 5]]), answered([['a', true, 6]], mode)];
     expect(failedQuestions(sessions, bank)).toEqual([]);
   });
@@ -280,6 +326,11 @@ describe('computeStats', () => {
     expect(stats).toMatchObject({ answered: 0, completed: 0, accuracy: null });
   });
 
+  it('excluye el modo curricular de las estadísticas generales', () => {
+    const stats = computeStats([answered([['js1', true, 1]], 'curriculum')], bank);
+    expect(stats).toMatchObject({ answered: 0, completed: 0, accuracy: null });
+  });
+
   it('cuenta las respuestas de un reto abandonado, pero no como completado', () => {
     const stats = computeStats([answered([['js1', true, 1]], 'mixed', 'abandoned')], bank);
     expect(stats).toMatchObject({ answered: 1, completed: 0 });
@@ -317,6 +368,34 @@ describe('ciclo del reto', () => {
     });
     const wrong = answerCurrent(started(questions), first, 'b', 2);
     expect(currentQuestion(activeSession(wrong) as Session)?.answer?.correct).toBe(false);
+  });
+
+  it('registra una respuesta abierta con autoevaluación y texto local', () => {
+    const question: Question = {
+      id: 'rec-semana-01-entrevista',
+      topic: 'fundamentos',
+      difficulty: 'intermedio',
+      type: 'open',
+      prompt: '¿Cómo explicarías equals?',
+      modelAnswer: 'Compara contenido.',
+      explanation: 'Distingue igualdad de valor e identidad.',
+      curriculum: { week: 1, category: 'interview' },
+    };
+    const progress = started([question], 'curriculum');
+    const session = activeSession(progress) as Session;
+    expect(session.questions[0]?.optionOrder).toEqual([]);
+
+    const remembered = answerCurrent(progress, question, 'remembered', 2, 'Mi respuesta');
+    expect(currentQuestion(activeSession(remembered) as Session)?.answer).toEqual({
+      optionId: 'remembered',
+      correct: true,
+      response: 'Mi respuesta',
+      at: 2,
+    });
+
+    const needsReview = answerCurrent(progress, question, 'review', 2);
+    expect(currentQuestion(activeSession(needsReview) as Session)?.answer?.correct).toBe(false);
+    expect(answerCurrent(progress, question, 'a', 2)).toEqual(progress);
   });
 
   it('no permite cambiar una respuesta dada', () => {
@@ -444,6 +523,27 @@ describe('persistencia', () => {
     const loaded = loadProgress(storage);
     expect(loaded).toEqual({ progress, status: 'ok' });
     expect(activeSession(loaded.progress)?.questions[0]?.answer?.correct).toBe(true);
+  });
+
+  it('migra progreso anterior al esquema que admite el repaso curricular', () => {
+    const result = loadProgress(
+      stored({
+        schemaVersion: 1,
+        sessions: [
+          {
+            id: 'legacy',
+            mode: 'mixed',
+            status: 'completed',
+            startedAt: 1,
+            currentIndex: 0,
+            questions: [],
+          },
+        ],
+      }),
+    );
+    expect(result.status).toBe('ok');
+    expect(result.progress.schemaVersion).toBe(2);
+    expect(result.progress.sessions[0]?.id).toBe('legacy');
   });
 
   it.each([
@@ -690,7 +790,7 @@ describe('selectReview con filtro', () => {
 
 describe('parseProgress', () => {
   it('acepta una copia válida', () => {
-    const progress = { schemaVersion: 1, sessions: [answered([['js1', true, 1]])] };
+    const progress = { schemaVersion: SCHEMA_VERSION, sessions: [answered([['js1', true, 1]])] };
     expect(parseProgress(JSON.stringify(progress))).toEqual({ progress, status: 'ok' });
   });
 

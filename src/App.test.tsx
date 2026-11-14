@@ -20,6 +20,19 @@ const bank: AppQuestion[] = [
   },
 ];
 
+const curriculumBank: AppQuestion[] = [
+  {
+    id: 'rec-semana-01-entrevista',
+    topic: 'fundamentos',
+    difficulty: 'intermedio',
+    type: 'open',
+    curriculum: { week: 1, category: 'interview' },
+    prompt: '¿Cómo explicarías la igualdad?',
+    modelAnswer: 'Distinguiría identidad de valor.',
+    explanation: 'Los records comparan sus componentes.',
+  },
+];
+
 describe('App', () => {
   const html = renderToString(<App bank={bank} storage={null} />);
 
@@ -28,6 +41,16 @@ describe('App', () => {
     expect(html).toContain('Empezar reto rápido');
     expect(html).toContain('Empezar reto a medida');
     expect(html).toContain('Repasar fallos');
+  });
+
+  it('mantiene el repaso de Reciclaje como apartado independiente', () => {
+    expect(html).toContain('Repaso de Reciclaje');
+    expect(html).toContain('Este apartado no mezcla sus preguntas');
+    const withCurriculum = renderToString(
+      <App bank={bank} curriculumBank={curriculumBank} storage={null} />,
+    ).replace(/<!--.*?-->/g, '');
+    expect(withCurriculum).toContain('Incluye 1 pregunta de código, teoría y entrevista técnica');
+    expect(withCurriculum).toContain('Bloque 3 · Semanas 9–12');
   });
 
   it('avisa cuando el filtro tiene pocas preguntas', () => {

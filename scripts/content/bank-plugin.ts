@@ -5,25 +5,30 @@ import type { Plugin } from 'vite';
 import { loadBank } from './load.ts';
 
 const VIRTUAL_ID = 'virtual:bank';
-const RESOLVED_ID = `\0${VIRTUAL_ID}`;
+
+interface BankPluginOptions {
+  directory?: string;
+  virtualId?: string;
+}
 
 /**
  * Expone el banco como `virtual:bank`. Valida las preguntas y resalta el código al compilar,
  * de modo que ni el validador ni el resaltador llegan al navegador.
  */
-export function bankPlugin(): Plugin {
+export function bankPlugin({ directory: directoryName = 'questions', virtualId = VIRTUAL_ID }: BankPluginOptions = {}): Plugin {
   let directory = '';
+  const resolvedId = `\0${virtualId}`;
 
   return {
-    name: 'devquiz-bank',
+    name: `devquiz-bank-${directoryName}`,
     configResolved(config) {
-      directory = join(config.root, 'content', 'questions');
+      directory = join(config.root, 'content', directoryName);
     },
     resolveId(id) {
-      return id === VIRTUAL_ID ? RESOLVED_ID : undefined;
+      return id === virtualId ? resolvedId : undefined;
     },
     async load(id) {
-      if (id !== RESOLVED_ID) return undefined;
+      if (id !== resolvedId) return undefined;
 
       for (const name of readdirSync(directory)) {
         this.addWatchFile(join(directory, name));

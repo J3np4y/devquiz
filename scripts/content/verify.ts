@@ -10,7 +10,7 @@ const TIMEOUT_MS = 10_000;
 export const PYTHON = process.env.PYTHON ?? 'python';
 
 /** Se usa .cjs para que los fragmentos de JavaScript se ejecuten como script, no como módulo. */
-const RUNNERS: Record<Language, { file: string; command: (path: string) => [string, string[]] }> = {
+const RUNNERS: Partial<Record<Language, { file: string; command: (path: string) => [string, string[]] }>> = {
   javascript: { file: 'snippet.cjs', command: (path) => [process.execPath, [path]] },
   python: { file: 'snippet.py', command: (path) => [PYTHON, ['-I', path]] },
   sql: { file: 'snippet.sql', command: (path) => [PYTHON, ['-I', RUN_SQL, path]] },
@@ -35,6 +35,7 @@ function snippetEnvironment(): NodeJS.ProcessEnv {
 
 export function runSnippet(language: Language, code: string): RunResult {
   const runner = RUNNERS[language];
+  if (!runner) throw new Error(`No hay un ejecutor configurado para ${language}`);
   const directory = mkdtempSync(join(tmpdir(), 'devquiz-'));
 
   try {
@@ -63,7 +64,7 @@ const normalize = (text: string) => text.replace(/\r\n/g, '\n').trim();
 export function verifyQuestion(question: Question): string | null {
   if (!question.verify || !question.code || !question.language) return null;
 
-  const correctText = question.options.find((option) => option.id === question.correct)?.text ?? '';
+  const correctText = question.options?.find((option) => option.id === question.correct)?.text ?? '';
   const result = runSnippet(question.language, question.code);
 
   if (question.verify === 'output') {

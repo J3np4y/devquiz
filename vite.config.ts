@@ -42,6 +42,7 @@ export default defineConfig({
   plugins: [
     react(),
     bankPlugin(),
+    bankPlugin({ directory: 'reciclaje', virtualId: 'virtual:reciclaje-bank' }),
     contentSecurityPolicyPlugin(),
     VitePWA({
       // El service worker nuevo toma el control en silencio y la versión nueva se ve en la

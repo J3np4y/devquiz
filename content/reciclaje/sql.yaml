@@ -1,0 +1,128 @@
+- id: rec-semana-05-codigo
+  topic: sql
+  difficulty: intermedio
+  type: code
+  language: sql
+  curriculum: { week: 5, category: code }
+  prompt: "¿Qué incluye la consulta para un cliente que todavía no tiene pedidos?"
+  code: |
+    SELECT c.id, COUNT(p.id)
+    FROM cliente c
+    LEFT JOIN pedido p ON p.cliente_id = c.id
+    GROUP BY c.id;
+  options:
+    - { id: a, text: "No aparece, porque `COUNT` elimina las filas sin coincidencia" }
+    - { id: b, text: "Aparece con un recuento de 0" }
+    - { id: c, text: "Aparece con un recuento de 1" }
+    - { id: d, text: "La consulta siempre falla por usar `LEFT JOIN`" }
+  correct: b
+  explanation: "`LEFT JOIN` conserva al cliente aunque no haya pedido; `COUNT(p.id)` ignora el `NULL` de la fila sin coincidencia y devuelve 0."
+
+- id: rec-semana-05-teoria
+  topic: sql
+  difficulty: principiante
+  type: concept
+  curriculum: { week: 5, category: theory }
+  prompt: "¿Qué garantiza una clave foránea en un modelo relacional?"
+  options:
+    - { id: a, text: "Que toda referencia apunte a una fila válida de la tabla relacionada, según la restricción" }
+    - { id: b, text: "Que todas las consultas usen un índice" }
+    - { id: c, text: "Que la columna referenciada sea siempre única en cualquier base" }
+    - { id: d, text: "Que una transacción nunca pueda hacer rollback" }
+  correct: a
+  explanation: "La clave foránea mantiene la integridad referencial. No garantiza por sí sola el plan de ejecución ni sustituye las transacciones."
+
+- id: rec-semana-05-entrevista
+  topic: sql
+  difficulty: intermedio
+  type: open
+  curriculum: { week: 5, category: interview }
+  prompt: "¿Qué factores valorarías antes de añadir un índice a una tabla?"
+  modelAnswer: "Revisaría las consultas reales, los filtros, joins y ordenamientos frecuentes, la selectividad y el plan con `EXPLAIN`. Un índice puede acelerar lecturas, pero ocupa espacio y añade coste a inserciones, actualizaciones y mantenimiento; lo mediría con datos representativos."
+  explanation: "Es importante justificar el índice por consultas observadas y no asumir que más índices siempre mejoran el rendimiento."
+
+- id: rec-semana-05-codigo-02
+  topic: sql
+  difficulty: intermedio
+  type: code
+  language: sql
+  curriculum: { week: 5, category: code }
+  prompt: "¿Qué grupos conserva esta consulta?"
+  code: |
+    SELECT estado, COUNT(*)
+    FROM pedido
+    GROUP BY estado
+    HAVING COUNT(*) >= 2;
+  options:
+    - { id: a, text: "Los estados que tienen al menos dos pedidos" }
+    - { id: b, text: "Los pedidos cuyo identificador es mayor que 2" }
+    - { id: c, text: "Todos los pedidos, sin agrupar" }
+    - { id: d, text: "Los estados con exactamente un pedido" }
+  correct: a
+  explanation: "`GROUP BY` forma un grupo por estado y `HAVING` filtra los grupos según el recuento agregado."
+
+- id: rec-semana-05-codigo-03
+  topic: sql
+  difficulty: intermedio
+  type: code
+  language: sql
+  curriculum: { week: 5, category: code }
+  prompt: "Después del `ROLLBACK`, ¿qué valor conserva la fila?"
+  code: |
+    BEGIN;
+    UPDATE cuenta SET saldo = saldo - 10 WHERE id = 1;
+    ROLLBACK;
+    SELECT saldo FROM cuenta WHERE id = 1;
+  options:
+    - { id: a, text: "El saldo anterior a la transacción" }
+    - { id: b, text: "El saldo anterior menos 10" }
+    - { id: c, text: "Cero" }
+    - { id: d, text: "La fila se elimina" }
+  correct: a
+  explanation: "`ROLLBACK` deshace los cambios no confirmados de la transacción."
+
+- id: rec-semana-05-teoria-02
+  topic: sql
+  difficulty: principiante
+  type: concept
+  curriculum: { week: 5, category: theory }
+  prompt: "¿Cuándo se usa `HAVING` en lugar de `WHERE`?"
+  options:
+    - { id: a, text: "Para filtrar grupos después de aplicar agregaciones" }
+    - { id: b, text: "Para ordenar las filas" }
+    - { id: c, text: "Para declarar una clave foránea" }
+    - { id: d, text: "Para reemplazar siempre a `GROUP BY`" }
+  correct: a
+  explanation: "`WHERE` filtra filas antes de agrupar; `HAVING` filtra grupos y puede usar resultados agregados."
+
+- id: rec-semana-05-teoria-03
+  topic: sql
+  difficulty: intermedio
+  type: concept
+  curriculum: { week: 5, category: theory }
+  prompt: "¿Qué coste puede introducir un índice adicional?"
+  options:
+    - { id: a, text: "Más espacio y trabajo al insertar o modificar filas" }
+    - { id: b, text: "Que las claves primarias dejen de ser únicas" }
+    - { id: c, text: "Que las transacciones no puedan hacer rollback" }
+    - { id: d, text: "Que todas las consultas deban usar ese índice" }
+  correct: a
+  explanation: "Los índices pueden acelerar lecturas apropiadas, pero ocupan almacenamiento y deben mantenerse durante cambios."
+
+- id: rec-semana-05-entrevista-02
+  topic: sql
+  difficulty: intermedio
+  type: open
+  curriculum: { week: 5, category: interview }
+  prompt: "¿Por qué usarías parámetros enlazados en JDBC en vez de concatenar valores en el SQL?"
+  modelAnswer: "Los parámetros separan los valores del texto SQL, reducen el riesgo de inyección y gestionan correctamente tipos y escape. También facilitan reutilizar el plan de una consulta. No concatenaría entrada externa para construir condiciones."
+  explanation: "Menciona seguridad y tipado; los parámetros no sustituyen validar reglas de negocio."
+
+- id: rec-semana-05-entrevista-03
+  topic: sql
+  difficulty: avanzado
+  type: open
+  curriculum: { week: 5, category: interview }
+  prompt: "¿Cómo elegirías dónde empieza y termina una transacción en una operación de negocio?"
+  modelAnswer: "La delimitaría alrededor de una unidad de trabajo coherente que debe confirmarse o deshacerse como conjunto. En Spring suele expresarse en el servicio de aplicación; mantendría la transacción acotada y evitaría llamadas lentas externas dentro de ella."
+  explanation: "La respuesta relaciona atomicidad con el límite de negocio y considera duración, bloqueos y fallos externos."

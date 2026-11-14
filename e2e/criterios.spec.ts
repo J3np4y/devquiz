@@ -142,6 +142,42 @@ test.describe('5. Repaso de fallos', () => {
   });
 });
 
+test.describe('Repaso de Reciclaje', () => {
+  test('filtra semanas y formatos, autoevalúa entrevistas y mantiene el progreso separado', async ({ page }) => {
+    await page.getByLabel('Bloque').selectOption('3');
+    await page.locator('.curriculum-filters select').nth(1).selectOption('9');
+    await page.getByLabel('Tipo de pregunta').selectOption('interview');
+    await expect(page.getByText('3 preguntas disponibles')).toBeVisible();
+    await page.getByRole('button', { name: 'Empezar repaso' }).click();
+    await expect(page.getByText('Repaso de Reciclaje · Pregunta 1 de 3')).toBeVisible();
+
+    await page.getByLabel('Tu respuesta').fill('Separaría identidad de igualdad por valor.');
+    await page.getByRole('button', { name: 'Mostrar respuesta orientativa' }).click();
+    await expect(page.locator('.open-answer')).toContainText('Respuesta orientativa');
+    await page.getByRole('button', { name: 'Necesito repasarla' }).click();
+
+    for (let index = 1; index < 3; index++) {
+      await page.getByRole('button', { name: 'Siguiente pregunta' }).click();
+      await page.getByRole('button', { name: 'Mostrar respuesta orientativa' }).click();
+      await page.getByRole('button', { name: 'La sabía' }).click();
+    }
+    await page.getByRole('button', { name: 'Ver resultados' }).click();
+
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Has acertado 2 de 3');
+    await expect(page.locator('.review-item')).toHaveCount(3);
+    await expect(page.locator('.review-item--wrong').first()).toContainText(
+      'Separaría identidad de igualdad por valor.',
+    );
+    await expect(page.locator('.review-item--wrong').first()).toContainText('Respuesta orientativa');
+
+    await page.getByRole('button', { name: 'Volver al inicio' }).first().click();
+    await expect(page.locator('.stats dd')).toHaveText(['0', '—', '0']);
+    await expect(page.getByRole('button', { name: 'Revisar fallos del temario (1)' })).toBeVisible();
+    await page.getByRole('button', { name: 'Revisar fallos del temario (1)' }).click();
+    await expect(page.getByText('Repaso de Reciclaje · Pregunta 1 de 1')).toBeVisible();
+  });
+});
+
 test.describe('6. Conservar y reiniciar el progreso', () => {
   test('recargar a mitad de reto conserva la pregunta y la respuesta', async ({ page }) => {
     await startQuick(page);

@@ -1,0 +1,129 @@
+- id: rec-semana-08-codigo
+  topic: testing
+  difficulty: intermedio
+  type: code
+  language: java
+  curriculum: { week: 8, category: code }
+  prompt: "¿Qué comprueba esta verificación de Mockito?"
+  code: |
+    when(repositorio.findById(7L)).thenReturn(Optional.of(pedido));
+
+    Pedido resultado = servicio.buscar(7L);
+
+    assertEquals(pedido, resultado);
+    verify(repositorio).findById(7L);
+  options:
+    - { id: a, text: "Que el servicio devuelve el pedido y consulta el repositorio con el identificador esperado" }
+    - { id: b, text: "Que el repositorio de producción está conectado a PostgreSQL" }
+    - { id: c, text: "Que el endpoint responde con HTTP 200" }
+    - { id: d, text: "Que todos los métodos privados del servicio se ejecutan" }
+  correct: a
+  explanation: "`when` configura el doble, `assertEquals` comprueba el resultado y `verify` comprueba la interacción con el repositorio."
+
+- id: rec-semana-08-teoria
+  topic: testing
+  difficulty: principiante
+  type: concept
+  curriculum: { week: 8, category: theory }
+  prompt: "¿Qué caracteriza principalmente a una prueba de integración?"
+  options:
+    - { id: a, text: "Comprueba la colaboración entre componentes reales o integrados, por ejemplo el repositorio con una base de datos" }
+    - { id: b, text: "Prueba siempre una sola función sin dependencias" }
+    - { id: c, text: "No puede ejecutarse automáticamente" }
+    - { id: d, text: "Sustituye las pruebas unitarias en cualquier proyecto" }
+  correct: a
+  explanation: "Una prueba de integración verifica límites entre componentes. Debe controlar sus dependencias externas y aislar los datos."
+
+- id: rec-semana-08-entrevista
+  topic: testing
+  difficulty: intermedio
+  type: open
+  curriculum: { week: 8, category: interview }
+  prompt: "¿Qué probarías con Mockito y qué dejarías para una prueba con Spring o con PostgreSQL real?"
+  modelAnswer: "Con Mockito aislaría la lógica del servicio y comprobaría resultados e interacciones relevantes con sus dependencias. Usaría MockMvc para validar el contrato HTTP y la configuración MVC; una prueba de repositorio o integración con PostgreSQL, idealmente Testcontainers, para validar consultas, mapeo y comportamiento real de la base."
+  explanation: "La elección depende del riesgo: los mocks aportan rapidez y aislamiento, pero no demuestran que la integración con Spring o la base funcione."
+
+- id: rec-semana-08-codigo-02
+  topic: testing
+  difficulty: intermedio
+  type: code
+  language: java
+  curriculum: { week: 8, category: code }
+  prompt: "¿Qué contrato HTTP comprueba esta expectativa?"
+  code: |
+    mockMvc.perform(get("/pedidos/99"))
+      .andExpect(status().isNotFound());
+  options:
+    - { id: a, text: "Que consultar un pedido inexistente devuelve 404" }
+    - { id: b, text: "Que la base de datos se ha reiniciado" }
+    - { id: c, text: "Que el servicio devuelve siempre una lista vacía" }
+    - { id: d, text: "Que el endpoint requiere autenticación" }
+  correct: a
+  explanation: "MockMvc invoca la capa MVC y verifica el estado HTTP esperado para un identificador no encontrado."
+
+- id: rec-semana-08-codigo-03
+  topic: testing
+  difficulty: avanzado
+  type: code
+  language: java
+  curriculum: { week: 8, category: code }
+  prompt: "¿Qué devuelve el mock cuando el servicio llama a `buscar(4L)`?"
+  code: |
+    when(repositorio.findById(4L))
+      .thenReturn(Optional.empty());
+
+    assertThrows(PedidoNoEncontradoException.class,
+      () -> servicio.buscar(4L));
+  options:
+    - { id: a, text: "El servicio debe lanzar `PedidoNoEncontradoException`" }
+    - { id: b, text: "Devuelve un pedido nuevo" }
+    - { id: c, text: "La prueba consulta PostgreSQL" }
+    - { id: d, text: "La excepción se ignora automáticamente" }
+  correct: a
+  explanation: "El doble devuelve `Optional.empty()` y la prueba comprueba que la lógica del servicio traduce esa ausencia a la excepción definida."
+
+- id: rec-semana-08-teoria-02
+  topic: testing
+  difficulty: principiante
+  type: concept
+  curriculum: { week: 8, category: theory }
+  prompt: "¿Qué busca una prueba unitaria de un servicio?"
+  options:
+    - { id: a, text: "Comprobar una unidad de lógica aislando sus dependencias externas relevantes" }
+    - { id: b, text: "Verificar todos los servicios desplegados en producción" }
+    - { id: c, text: "Probar exclusivamente el esquema de base de datos" }
+    - { id: d, text: "Demostrar que no existen errores en todo el sistema" }
+  correct: a
+  explanation: "Una prueba unitaria se centra en una unidad acotada y usa dobles cuando necesita aislar colaboraciones."
+
+- id: rec-semana-08-teoria-03
+  topic: testing
+  difficulty: intermedio
+  type: concept
+  curriculum: { week: 8, category: theory }
+  prompt: "¿Qué ventaja tiene usar Testcontainers para una prueba de integración con PostgreSQL?"
+  options:
+    - { id: a, text: "Ejecuta una instancia real y aislada del motor para comprobar consultas y comportamiento específico" }
+    - { id: b, text: "Convierte la prueba en una prueba unitaria sin dependencias" }
+    - { id: c, text: "Garantiza que cualquier versión de base de datos sea idéntica" }
+    - { id: d, text: "Evita tener que limpiar los datos de prueba" }
+  correct: a
+  explanation: "Testcontainers permite probar contra el motor real de forma reproducible; hay que fijar la imagen y aislar los datos."
+
+- id: rec-semana-08-entrevista-02
+  topic: testing
+  difficulty: intermedio
+  type: open
+  curriculum: { week: 8, category: interview }
+  prompt: "¿Qué riesgos tiene abusar de los mocks en pruebas de un servicio?"
+  modelAnswer: "La prueba puede repetir la implementación interna y romperse ante refactorizaciones inocuas. Además, un mock no demuestra que la consulta, el mapeo o la configuración real funcionen. Mockearía colaboradores relevantes y reservaría pruebas de integración para los límites."
+  explanation: "Una buena suite equilibra aislamiento, velocidad y confianza en las integraciones reales."
+
+- id: rec-semana-08-entrevista-03
+  topic: testing
+  difficulty: avanzado
+  type: open
+  curriculum: { week: 8, category: interview }
+  prompt: "¿Cómo harías una prueba de rollback que no deje datos en una base compartida?"
+  modelAnswer: "Usaría una base efímera o un esquema aislado, ejecutaría la operación dentro de una transacción controlada y comprobaría desde fuera del contexto que el cambio no quedó persistido tras el rollback. Confirmaría perfil, URL y limpieza antes de ejecutarla."
+  explanation: "Hay que proteger datos ajenos, controlar el límite transaccional y verificar el estado persistido, no solo el objeto en memoria."

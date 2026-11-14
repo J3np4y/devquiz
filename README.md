@@ -37,6 +37,7 @@ Sin cuentas, sin anuncios, sin seguimiento. Funciona sin conexión.
 | **Reto rápido** | 10 preguntas variadas, de al menos 3 temas y con un mínimo de un 30 % de código |
 | **Reto a medida** | Elige tema y nivel |
 | **Repaso de fallos** | De todos los temas o de uno solo |
+| **Repaso de Reciclaje** | 108 preguntas independientes para las semanas 1–12 (9 por semana), filtrables por bloque, semana y formato: código, teoría o entrevista técnica |
 | **Dos formatos** | Opción múltiple y verdadero o falso |
 | **Progreso** | Precisión global y por tema, retos completados y racha diaria |
 | **Copia de seguridad** | Exporta e importa tu progreso en un archivo JSON |
